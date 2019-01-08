@@ -1,0 +1,5 @@
+.git
+.dockerignore
+README.md
+test
+.gitlab-ci.yml
