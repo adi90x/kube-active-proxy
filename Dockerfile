@@ -2,14 +2,14 @@ FROM nginx:alpine
 MAINTAINER Adrien M amaurel90@gmail.com
 
 ENV DEBUG=false KAP_DEBUG="info" 
-ARG VERSION_kube_GEN="artifacts/master"
+ARG VERSION_KUBE_GEN="artifacts/master"
 
 RUN apk add --no-cache nano ca-certificates unzip wget certbot bash openssl
 
 # Install Forego & kube-Gen-KAP
 ADD https://github.com/jwilder/forego/releases/download/v0.16.1/forego /usr/local/bin/forego
 
-RUN wget "https://gitlab.com/adi90x/kube-gen-rap/builds/$VERSION_kube_GEN/download?job=compile-go" -O /tmp/kube-gen-KAP.zip \
+RUN wget "https://gitlab.com/adi90x/rancher-gen-rap/builds/$VERSION_KUBE_GEN/download?job=compile-go" -O /tmp/kube-gen-KAP.zip \
 	&& unzip /tmp/kube-gen-KAP.zip -d /usr/local/bin \
 	&& chmod +x /usr/local/bin/kube-gen \
 	&& chmod u+x /usr/local/bin/forego \
