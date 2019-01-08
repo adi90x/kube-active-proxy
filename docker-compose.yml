@@ -1,7 +1,7 @@
 version: '2'
 services:
   Proxy:
-    image: adi90x/rancher-active-proxy
+    image: adi90x/kube-active-proxy
     environment:
       DEFAULT_HOST: "Default Domain ex: bar.com"
       DEFAULT_EMAIL: "Default Email ex: foo@bar.com"
@@ -15,4 +15,4 @@ services:
     - 80:80/tcp
     - 443:443/tcp
     labels:
-      io.rancher.container.pull_image: always
+      io.kube.container.pull_image: always

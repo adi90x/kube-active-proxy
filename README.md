@@ -1,4 +1,4 @@
-![nginx latest](https://img.shields.io/badge/nginx-latest-brightgreen.svg)[![build status](https://gitlab.com/adi90x/rancher-active-proxy/badges/master/build.svg)](https://gitlab.com/adi90x/rancher-active-proxy/commits/master)  ![License MIT](https://img.shields.io/badge/license-MIT-blue.svg)   [![Docker Pulls](https://img.shields.io/docker/pulls/adi90x/rancher-active-proxy.svg)](https://hub.docker.com/r/adi90x/rancher-active-proxy/)  [![Docker Automated buil](https://img.shields.io/docker/automated/adi90x/rancher-active-proxy.svg)](https://hub.docker.com/r/adi90x/rancher-active-proxy/)
+![nginx latest](https://img.shields.io/badge/nginx-latest-brightgreen.svg)[![build status](https://gitlab.com/adi90x/kube-active-proxy/badges/master/build.svg)](https://gitlab.com/adi90x/kube-active-proxy/commits/master)  ![License MIT](https://img.shields.io/badge/license-MIT-blue.svg)   [![Docker Pulls](https://img.shields.io/docker/pulls/adi90x/kube-active-proxy.svg)](https://hub.docker.com/r/adi90x/kube-active-proxy/)  [![Docker Automated buil](https://img.shields.io/docker/automated/adi90x/kube-active-proxy.svg)](https://hub.docker.com/r/adi90x/kube-active-proxy/)
 
 
 ## Kube Active Proxy
@@ -7,7 +7,7 @@ Kube Active Proxy is an all-in-one reverse proxy for [Kubernetes](https://kubern
 
 Kube Active Proxy is based on the excellent idea of [jwilder/nginx-proxy](https://github.com/jwilder/nginx-proxy).
 
-Kube Active Proxy replace docker-gen by Rancher-gen-kap [adi90x/rancher-gen-kap](https://github.com/adi90x/rancher-gen-kap) ( a fork of the also excellent [janeczku/go-rancher-gen](https://github.com/janeczku/go-rancher-gen) adding some more function )
+Kube Active Proxy replace docker-gen by kube-gen-kap [adi90x/kube-gen-kap](https://github.com/adi90x/kube-gen-kap) ( a fork of the also excellent [janeczku/go-kube-gen](https://github.com/janeczku/go-kube-gen) adding some more function )
 
 Kube Active Proxy use label instead of environmental value.
 
@@ -15,7 +15,7 @@ I would recommend to use latest image from DockerHub or you can use tag versions
 
 ### Easy Setup with catalog
 
-Add `https://github.com/adi90x/rancher-active-proxy.git` to your custom catalog list( Rancher > Admin > Settings ).
+Add `https://github.com/adi90x/kube-active-proxy.git` to your custom catalog list( kube > Admin > Settings ).
 
 Then go to catalog and install Kube Active Proxy !
 
@@ -23,7 +23,7 @@ Then go to catalog and install Kube Active Proxy !
 
 Minimal Params To run it:
 
-    $ docker run -d -p 80:80  adi90x/rancher-active-proxy
+    $ docker run -d -p 80:80  adi90x/kube-active-proxy
 
 Then start any containers you want proxied with a label `kap.host=subdomain.youdomain.com`
 
@@ -31,7 +31,7 @@ Then start any containers you want proxied with a label `kap.host=subdomain.youd
 
 The containers being proxied must [expose](https://docs.docker.com/reference/run/#expose-incoming-ports) the port to be proxied, either by using the `EXPOSE` directive in their `Dockerfile` or by using the `--expose` flag to `docker run` or `docker create`.
 
-Provided your DNS is setup to forward foo.bar.com to the a host running `rancher-active-proxy`, the request will be routed to a container with the `kap.host` label set.
+Provided your DNS is setup to forward foo.bar.com to the a host running `kube-active-proxy`, the request will be routed to a container with the `kap.host` label set.
 
 #### Summary of available labels for proxied containers.
 
@@ -48,8 +48,8 @@ Provided your DNS is setup to forward foo.bar.com to the a host running `rancher
 | `kap.le_email`             | Email to use for Letsencrypt
 | `kap.le_test  `            | Set to true to use stagging letsencrypt server
 | `kap.le_bypass`            | Set to true to create a special bypass to use LE
-| `kap.http_listen_ports`    | External Port you want Rancher-Active-Proxy to listen to http for this server ( Default : `80` )
-| `kap.https_listen_ports`   | External Port you want Rancher-Active-Proxy to listen to https for this server ( Default : `443` )
+| `kap.http_listen_ports`    | External Port you want kube-Active-Proxy to listen to http for this server ( Default : `80` )
+| `kap.https_listen_ports`   | External Port you want kube-Active-Proxy to listen to https for this server ( Default : `443` )
 | `kap.server_tokens`    	 | Enable to specify the server_token value per container
 | `kap.client_max_body_size` | Enable to specify the client_max_body_size directive per container
 | `kap.kap_name`             | If `kap_NAME` is specified for a kap instance only container with label value matching `kap_NAME` value will be publish
@@ -62,7 +62,7 @@ Provided your DNS is setup to forward foo.bar.com to the a host running `rancher
 | `CRON`             | Cron like expression to define when certs are renew. Default : `0 2 * * *`
 | `DEFAULT_HOST`     | Default Nginx host.
 | `DEFAULT_EMAIL`    | Default Email for Letsencrypt.
-| `KAP_DEBUG` 		 | Define Rancher-Gen-kap verbosity (Valid values: "debug", "info", "warn", and "error"). Default: `info`
+| `KAP_DEBUG` 		 | Define kube-Gen-kap verbosity (Valid values: "debug", "info", "warn", and "error"). Default: `info`
 | `DEFAULT_PORT` 	 | Default port use for containers ( Default : `80` )
 | `SPECIFIC_HOST` 	 | Limit kap to only containers of a specific host name
 | `kap_NAME` 	     | If specify kap will only publish service with `kap.kap_name = kap_NAME`
@@ -81,11 +81,11 @@ Kube Active Proxy is also able to work for standalone containers on the host it 
 
 There is only one limit to this : You should not use the same host name ( `kap.host` label ) for a standalone container and for a service.
 
-This feature even enables you to proxy rancher-server, just start it with something like that :
+This feature even enables you to proxy kube-server, just start it with something like that :
 
-`docker run -d --restart=unless-stopped -p 8080:8080 --name=rancher-server -l kap.host=admin.foo.com -l kap.port=8080 -l kap.le_host=admin.foo.com -l  kap.le_email=foo@bar.com -l io.rancher.container.pull_image=always rancher/server`
+`docker run -d --restart=unless-stopped -p 8080:8080 --name=kube-server -l kap.host=admin.foo.com -l kap.port=8080 -l kap.le_host=admin.foo.com -l  kap.le_email=foo@bar.com -l io.kube.container.pull_image=always kube/server`
 
-In this case `admin.foo.com` will enable you to acces rancher administration, but it is better to keep port 8080 exposed and use `http://foo.com:8080` as the host registration URL.
+In this case `admin.foo.com` will enable you to acces kube administration, but it is better to keep port 8080 exposed and use `http://foo.com:8080` as the host registration URL.
 
 #### Let's Encrypt support out of box
 
@@ -139,9 +139,9 @@ This would yield 3 different server/upstream configurations...
 
 ### Multiple Listening Port
 
-If needed you can use Rancher-Active-Proxy to listen for different ports.
+If needed you can use kube-Active-Proxy to listen for different ports.
 
-`docker run -d -p 8081:8081 -p 81:81  adi90x/rancher-active-proxy`
+`docker run -d -p 8081:8081 -p 81:81  adi90x/kube-active-proxy`
 
 In this case, you can specify on which port Kube Active Proxy should listen for a specific hostname :
 
@@ -158,13 +158,13 @@ If you are not using port `80` and `443` at all you won't be able to use Let's E
 
 Using environmental value `SPECIFIC_HOST` you can limit Kube Active Proxy to containers running on a single host.
 
-Just start Kube Active Proxy like that : `docker run -d -p 80:80 -e SPECIFIC_HOST=Hostnameofthehost adi90x/rancher-active-proxy`
+Just start Kube Active Proxy like that : `docker run -d -p 80:80 -e SPECIFIC_HOST=Hostnameofthehost adi90x/kube-active-proxy`
 
 ### Remove Script
 
 Kube Active Proxy provides an easy script to revoke/delete a certificate.
 
-You can run it : `docker run adi90x/rancher-active-proxy /app/remove DomainCertToRemove`
+You can run it : `docker run adi90x/kube-active-proxy /app/remove DomainCertToRemove`
 
 Script is adding '*' at the end of the command therefore `/app/remove foo` will delete `foo.bar.com , foo.bar.org, foo.bar2.com ..`
 
@@ -172,7 +172,7 @@ _Special attention_: If you are using it with SAN certificates you need to be ca
 
 Do not forget to delete the label on the container before using that script or it will be recreated on next update.
 
-If you are starting it with Rancher do not forget to set Auto Restart : Never (Start Once)
+If you are starting it with kube do not forget to set Auto Restart : Never (Start Once)
 
 ### Per-host server configuration
 
@@ -181,7 +181,7 @@ The file should use the suffix `_server`.
 
 For example, if you have a virtual host named `app.example.com` and you have configured a proxy_cache `my-cache` in another custom file, you could tell it to use a proxy cache as follows:
 
-    $ docker run -d -p 80:80 -p 443:443 -v /path/to/vhost.d:/etc/nginx/vhost.d:ro adi90x/rancher-active-proxy
+    $ docker run -d -p 80:80 -p 443:443 -v /path/to/vhost.d:/etc/nginx/vhost.d:ro adi90x/kube-active-proxy
 
 You should therefore have a file `app.example.com_server` in the `/etc/nginx/vhost.d` folder that contains the whole server block you want to use :
 
@@ -238,7 +238,7 @@ Your backend container should than listen on a port rather than a socket and exp
 
 To set the default host for nginx use the env var `DEFAULT_HOST=foo.bar.com` for example :
 
-    $ docker run -d -p 80:80 -e DEFAULT_HOST=foo.bar.com adi90x/rancher-active-proxy
+    $ docker run -d -p 80:80 -e DEFAULT_HOST=foo.bar.com adi90x/kube-active-proxy
 
 ### SSL Support
 
@@ -247,7 +247,7 @@ or optionally specifying a cert name (for SNI) as an environment variable.
 
 To enable SSL:
 
-    $ docker run -d -p 80:80 -p 443:443 -v /path/to/certs:/etc/nginx/certs  adi90x/rancher-active-proxy
+    $ docker run -d -p 80:80 -p 443:443 -v /path/to/certs:/etc/nginx/certs  adi90x/kube-active-proxy
 
 The contents of `/path/to/certs` should contain the certificates and private keys for any virtual
 hosts in use.  The certificate and keys should be named after the virtual host with a `.crt` and
@@ -312,7 +312,7 @@ In order to be able to secure your virtual host, you have to create a file named
 $ docker run -d -p 80:80 -p 443:443 \
     -v /path/to/htpasswd:/etc/nginx/htpasswd \
     -v /path/to/certs:/etc/nginx/certs \
-    adi90x/rancher-active-proxy
+    adi90x/kube-active-proxy
 ```
 
 You'll need apache2-utils on the machine where you plan to create the htpasswd file.
@@ -358,7 +358,7 @@ To add settings on a proxy-wide basis, add your configuration file under `/etc/n
 This can be done in a derived image by creating the file in a `RUN` command or by `COPY`ing the file into `conf.d`:
 
 ```Dockerfile
-FROM adi90x/rancher-active-proxy
+FROM adi90x/kube-active-proxy
 RUN { \
       echo 'server_tokens off;'; \
       echo 'client_max_body_size 100m;'; \
@@ -367,7 +367,7 @@ RUN { \
 
 Or it can be done by mounting in your custom configuration in your `docker run` command:
 
-    $ docker run -d -p 80:80 -p 443:443 -v /path/to/my_proxy.conf:/etc/nginx/conf.d/my_proxy.conf:ro adi90x/rancher-active-proxy
+    $ docker run -d -p 80:80 -p 443:443 -v /path/to/my_proxy.conf:/etc/nginx/conf.d/my_proxy.conf:ro adi90x/kube-active-proxy
 
 ### Per-VIRTUAL_HOST
 
@@ -377,7 +377,7 @@ In order to allow virtual hosts to be dynamically configured as backends are add
 
 For example, if you have a virtual host named `app.example.com`, you could provide a custom configuration for that host as follows:
 
-    $ docker run -d -p 80:80 -p 443:443 -v /path/to/vhost.d:/etc/nginx/vhost.d:ro adi90x/rancher-active-proxy
+    $ docker run -d -p 80:80 -p 443:443 -v /path/to/vhost.d:/etc/nginx/vhost.d:ro adi90x/kube-active-proxy
     $ { echo 'server_tokens off;'; echo 'client_max_body_size 100m;'; } > /path/to/vhost.d/app.example.com
 
 If you are using multiple hostnames for a single container (e.g. `kap.host=example.com,www.example.com`), the virtual host configuration file must exist for each hostname. If you would like to use the same configuration for multiple virtual host names, you can use a symlink:
@@ -397,7 +397,7 @@ just like the previous section except with the suffix `_location`.
 
 For example, if you have a virtual host named `app.example.com` and you have configured a proxy_cache `my-cache` in another custom file, you could tell it to use a proxy cache as follows:
 
-    $ docker run -d -p 80:80 -p 443:443 -v /path/to/vhost.d:/etc/nginx/vhost.d:ro adi90x/rancher-active-proxy
+    $ docker run -d -p 80:80 -p 443:443 -v /path/to/vhost.d:/etc/nginx/vhost.d:ro adi90x/kube-active-proxy
     $ { echo 'proxy_cache my-cache;'; echo 'proxy_cache_valid  200 302  60m;'; echo 'proxy_cache_valid  404 1m;' } > /path/to/vhost.d/app.example.com_location
 
 If you are using multiple hostnames for a single container (e.g. `kap.host=example.com,www.example.com`), the virtual host configuration file must exist for each hostname. If you would like to use the same configuration for multiple virtual host names, you can use a symlink:
@@ -414,4 +414,4 @@ will be used on any virtual host which does not have a `/etc/nginx/vhost.d/{kap.
 
 Do not hesitate to send issues or pull requests !
 
-Automated Gitlab CI is used to build Kube Active Proxy therefore send any pull request/issues to [Kube Active Proxy on Gitlab.com](https://gitlab.com/adi90x/rancher-active-proxy/)
+Automated Gitlab CI is used to build Kube Active Proxy therefore send any pull request/issues to [Kube Active Proxy on Gitlab.com](https://gitlab.com/adi90x/kube-active-proxy/)

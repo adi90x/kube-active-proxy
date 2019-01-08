@@ -123,8 +123,8 @@ update_certs() {
 
 pid=
 # Service Loop: When this script exits, start it again.
-trap '[[ $pid ]] && kill $pid; exec $0' EXIT
-trap 'trap - EXIT' INT TERM
+tKAP '[[ $pid ]] && kill $pid; exec $0' EXIT
+tKAP 'tKAP - EXIT' INT TERM
 
 update_certs
 

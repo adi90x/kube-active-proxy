@@ -3,7 +3,7 @@
 	upstream {{.HOST}} {
 {{- end -}}
 {{ if .ONLINE }}
-	# Access through rancher managed network
+	# Access through kube managed network
 	server {{.IP}}:{{.PORT}};
 {{- else }}
 	# {{.IP}} is not running or is unhealthy
@@ -19,25 +19,25 @@ include {{ printf "/etc/nginx/vhost.d/%s_server" $host}};
 include /etc/nginx/vhost.d/default_server;
 {{- else }}
 
-{{- $http_ports := split (.FIRST.Labels.GetValue "rap.http_listen_ports" "80" ) ","  }}
-{{- $https_ports := split (.FIRST.Labels.GetValue "rap.https_listen_ports" "443" ) "," }}
+{{- $http_ports := split (.FIRST.Labels.GetValue "KAP.http_listen_ports" "80" ) ","  }}
+{{- $https_ports := split (.FIRST.Labels.GetValue "KAP.https_listen_ports" "443" ) "," }}
 
 {{- $default_host := or (env "DEFAULT_HOST") "" }}
 {{- $default_server := index (dict $host "" $default_host "default_server") $host }}
 
-{{- $proto := .FIRST.Labels.GetValue "rap.proto" "http" | or .PROTO  }}
-{{- $https_method := .FIRST.Labels.GetValue "rap.https_method" "redirect" }}
+{{- $proto := .FIRST.Labels.GetValue "KAP.proto" "http" | or .PROTO  }}
+{{- $https_method := .FIRST.Labels.GetValue "KAP.https_method" "redirect" }}
 
 {{- $vhostCert := (closest (dirList "/etc/nginx/certs") (printf "%s.crt" $host))}}
 
 {{- $vhostCert := trimSuffix $vhostCert ".crt" }}
 {{- $vhostCert := trimSuffix $vhostCert ".key" }}
 
-{{- $cert := .FIRST.Labels.GetValue "rap.cert_name" $vhostCert }}
-{{- $token := .FIRST.Labels.GetValue "rap.server_tokens" "" }}
-{{- $body_size := .FIRST.Labels.GetValue "rap.client_max_body_size" "" }}
-{{- $le_bypass := .FIRST.Labels.GetValue "rap.le_bypass" "" }}
-{{- $timeout := .FIRST.Labels.GetValue "rap.timeout" "" }}
+{{- $cert := .FIRST.Labels.GetValue "KAP.cert_name" $vhostCert }}
+{{- $token := .FIRST.Labels.GetValue "KAP.server_tokens" "" }}
+{{- $body_size := .FIRST.Labels.GetValue "KAP.client_max_body_size" "" }}
+{{- $le_bypass := .FIRST.Labels.GetValue "KAP.le_bypass" "" }}
+{{- $timeout := .FIRST.Labels.GetValue "KAP.timeout" "" }}
 
 {{- $is_https := (and (ne $https_method "nohttps") (ne $cert "") (exists (printf "/etc/nginx/certs/%s.crt" $cert)) (exists (printf "/etc/nginx/certs/%s.key" $cert))) }}
 
@@ -270,12 +270,12 @@ proxy_set_header X-Forwarded-Port $proxy_x_forwarded_port;
 proxy_set_header Proxy "";
 {{- end }}
 
-{{- $http_ports_services := services | getAllLabelValue "*" "rap.http_listen_ports" ","}}
-{{- $http_ports_stand := host.Containers | getAllLabelValue "" "rap.http_listen_ports" ","}}
+{{- $http_ports_services := services | getAllLabelValue "*" "KAP.http_listen_ports" ","}}
+{{- $http_ports_stand := host.Containers | getAllLabelValue "" "KAP.http_listen_ports" ","}}
 {{- $http_ports := concatenateUnique $http_ports_services $http_ports_stand }}
 
-{{- $https_ports_services := services | getAllLabelValue "*" "rap.https_listen_ports" ","}}
-{{- $https_ports_stand := host.Containers | getAllLabelValue "" "rap.https_listen_ports" ","}}
+{{- $https_ports_services := services | getAllLabelValue "*" "KAP.https_listen_ports" ","}}
+{{- $https_ports_stand := host.Containers | getAllLabelValue "" "KAP.https_listen_ports" ","}}
 {{- $https_ports := concatenateUnique $https_ports_services $https_ports_stand }}
 
 server {
@@ -310,11 +310,11 @@ server {
 
 {{- $default_port := or (env "DEFAULT_PORT") "80" }}
 {{- $host_filter := or (env "SPECIFIC_HOST") "*" }}
-{{- $rap_name := or (env "RAP_NAME") "*" }}
+{{- $KAP_name := or (env "KAP_NAME") "*" }}
 
-# Rancher Services config
+# kube Services config
 
-{{- range $opt, $services := services | groupByMulti "rap.host" ","}}
+{{- range $opt, $services := services | groupByMulti "KAP.host" ","}}
 {{- $parts := split $opt "=>"}}
 {{- $host := first $parts | trim }}
 {{- $dest := last $parts | trim }}
@@ -325,13 +325,13 @@ server {
 
 {{range $service := $services}}
 {{- $addrLen := len $service.Ports }}
-{{- range $cont := $service.Containers | filterHost $host_filter | filterLabel "rap.rap_name" $rap_name}}
+{{- range $cont := $service.Containers | filterHost $host_filter | filterLabel "KAP.KAP_name" $KAP_name}}
 		{{- $online := (and (or (eq .Health "") (eq .Health "healthy")) (eq .State "running")) -}}
 		{{- if ne $destPort ""}}
 			{{- template "upstream" (dict "HOST" $host "FIRST" $alive "IP" $cont.Address "ONLINE" $online "PORT" $destPort) }}
 			{{- $_ := $alive.Set true }}
-		{{- else if .Labels.Exists "rap.port"}}
-			{{- $port := .Labels.GetValue "rap.port" "80" }}
+		{{- else if .Labels.Exists "KAP.port"}}
+			{{- $port := .Labels.GetValue "KAP.port" "80" }}
 			{{- template "upstream" (dict "HOST" $host "FIRST" $alive "IP" $cont.Address "ONLINE" $online "PORT" $port) }}
 			{{- $_ := $alive.Set true }}
 		{{- else if eq $addrLen 1 }}
@@ -356,7 +356,7 @@ server {
 # Standalone containers config
 
 {{ if or (eq $host_filter "*") (eq host.Name $host_filter) }}
-{{- range $opt, $conts := host.Containers | filterLabel "rap.rap_name" $rap_name | groupByMultiFilter "" "rap.host" ","}}
+{{- range $opt, $conts := host.Containers | filterLabel "KAP.KAP_name" $KAP_name | groupByMultiFilter "" "KAP.host" ","}}
 {{- $parts := split $opt "=>"}}
 {{- $host := first $parts | trim }}
 {{- $dest := last $parts | trim }}
@@ -371,8 +371,8 @@ server {
 		{{- if ne $destPort ""}}
 			{{- template "upstream" (dict "HOST" $host "FIRST" $alive "IP" $cont.Address "ONLINE" $online "PORT" $destPort) }}
 			{{- $_ := $alive.Set true }}
-		{{- else if .Labels.Exists "rap.port"}}
-			{{- $port := .Labels.GetValue "rap.port" "80" }}
+		{{- else if .Labels.Exists "KAP.port"}}
+			{{- $port := .Labels.GetValue "KAP.port" "80" }}
 			{{- template "upstream" (dict "HOST" $host "FIRST" $alive "IP" $cont.Address "ONLINE" $online "PORT" $port) }}
 			{{- $_ := $alive.Set true }}
 		{{- else if eq $addrLen 1 }}
