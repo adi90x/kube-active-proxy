@@ -36,7 +36,7 @@ function check_dh_group {
     check_dh_group
     
     #Recreating needed certs
-    kube-gen --onetime /app/letsencrypt.tmpl /app/letsencrypt.conf
+    kube-template-kap --once -t /app/letsencrypt.tmpl:/app/letsencrypt.conf
 
     source /app/letsencrypt.conf
 
