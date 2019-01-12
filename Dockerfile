@@ -12,7 +12,7 @@ ADD https://storage.googleapis.com/kubernetes-release/release/v1.3.4/bin/linux/a
 
 RUN wget "https://gitlab.com/adi90x/kube-template-kap/builds/$VERSION_KUBE_GEN/download?job=compile-go" -O /tmp/kube-template-kap.zip \
 	&& unzip /tmp/kube-template-kap.zip -d /usr/local/bin \
-	&& chmod +x /usr/local/bin/kube-gen \
+	&& chmod +x /usr/local/bin/kube-template-kap \
 	&& chmod u+x /usr/local/bin/forego \
 	&& chmod u+x /usr/local/bin/kubectl \
 	&& rm -f /tmp/kube-template-kap.zip
