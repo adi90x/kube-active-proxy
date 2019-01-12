@@ -11,7 +11,7 @@ ADD https://github.com/jwilder/forego/releases/download/v0.16.1/forego /usr/loca
 ADD https://storage.googleapis.com/kubernetes-release/release/v1.3.4/bin/linux/amd64/kubectl /usr/local/bin/kubectl
 
 RUN wget "https://gitlab.com/adi90x/kube-template-kap/builds/$VERSION_KUBE_GEN/download?job=compile-go" -O /tmp/kube-template-kap.zip \
-	&& unzip kube-template-kap.zip -d /usr/local/bin \
+	&& unzip /tmp/kube-template-kap.zip -d /usr/local/bin \
 	&& chmod +x /usr/local/bin/kube-gen \
 	&& chmod u+x /usr/local/bin/forego \
 	&& chmod u+x /usr/local/bin/kubectl \
