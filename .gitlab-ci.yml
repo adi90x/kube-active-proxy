@@ -5,7 +5,7 @@ build-image:
  script:
     - apk add --no-cache curl
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
-    - version_available=$(curl --write-out %{http_code} --silent --output /dev/null https://gitlab.com/adi90x/rancher-gen-rap/builds/artifacts/$CI_BUILD_REF_NAME/browse?job=compile-go)
+    - version_available=$(curl --write-out %{http_code} --silent --output /dev/null https://gitlab.com/adi90x/kube-template-kap/builds/artifacts/$CI_BUILD_REF_NAME/browse?job=compile-go)
     - if [ $version_available == "302" ]; then build_version=artifacts/$CI_BUILD_REF_NAME; else build_version="artifacts/master"; fi
     - if [ $FORCE_KUBE_GEN_VERSION != "" ]; then build_version=$FORCE_KUBE_GEN_VERSION/artifacts; fi
     - if [ $CI_BUILD_REF_NAME == "master" ]; then tag="latest"; else tag=$CI_BUILD_REF_NAME; fi

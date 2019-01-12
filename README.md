@@ -5,19 +5,19 @@
 
 Kube Active Proxy is an all-in-one reverse proxy for [Kubernetes](https://kubernetes.io/), supporting Letsencrypt out of the box !
 
+Kube Active Proxy is a copy of my [Rancher-Active-Proxy](https://gitlab.com/adi90x/rancher-active-proxy) application.
+
 Kube Active Proxy is based on the excellent idea of [jwilder/nginx-proxy](https://github.com/jwilder/nginx-proxy).
 
-Kube Active Proxy replace docker-gen by kube-gen-kap [adi90x/kube-gen-kap](https://github.com/adi90x/kube-gen-kap) ( a fork of the also excellent [janeczku/go-kube-gen](https://github.com/janeczku/go-kube-gen) adding some more function )
+Kube Active Proxy replace docker-gen by kube-template-kap [adi90x/kube-gen-kap](https://github.com/adi90x/kube-template-kap) ( a fork of the also excellent [3cky/kube-template](https://github.com/3cky/kube-template) adding some more function )
 
 Kube Active Proxy use label instead of environmental value.
 
 I would recommend to use latest image from DockerHub or you can use tag versions. Keep in mind that branch are mostly development features and could not work as expected.
 
-### Easy Setup with catalog
+### Easy Setup with Helm
 
-Add `https://github.com/adi90x/kube-active-proxy.git` to your custom catalog list( kube > Admin > Settings ).
-
-Then go to catalog and install Kube Active Proxy !
+TO-DO
 
 ### Usage
 
