@@ -1,32 +1,31 @@
 {{- $Default_email := or (env "DEFAULT_EMAIL") "foo@bar.com" -}}
 
 LETSENCRYPT_CONTAINERS=(
-{{- range $host, $services := services | groupByMulti "KAP.le_host" "," -}}
-{{- range $service := $services -}} 
-'{{ formatClean $host }}' {{ end -}}{{- end -}}
-{{- range $host, $conts := host.Containers | groupByMultiFilter "" "KAP.le_host" "," -}}
-'{{ formatClean $host }}' {{ end -}}
+{{- range $host, $services := services | groupByMulti "kap/le_host" "," -}}
+{{- range $service := $services -}}
+'{{ formatClean $host }}' {{ end -}}{{- end -}} )
+{{-/* Removing Standalone Containers Support */-}}
+{{/* {{- range $host, $conts := host.Containers | groupByMultiFilter "" "kap/le_host" "," -}}'{{ formatClean $host }}' {{ end -}} */}}
 
-)
-
-{{ range $host, $services := services | groupByMulti "KAP.le_host" "," -}}
-
+{{- range $host, $services := services | groupByMulti "kap/le_host" "," -}}
 {{- range $service := $services }}
 {{- $cid := formatClean $host }}
 
 LETSENCRYPT_{{$cid}}_HOST=( '{{$host}}' )
-LETSENCRYPT_{{$cid}}_EMAIL="{{.Labels.GetValue "KAP.le_email" $Default_email}}"
-LETSENCRYPT_{{$cid}}_TEST="{{.Labels.GetValue "KAP.le_test"}}"
+LETSENCRYPT_{{$cid}}_EMAIL="{{GetValue .Annotations "kap/le_email" $Default_email}}"
+LETSENCRYPT_{{$cid}}_TEST="{{GetValue .Annotations "kap/le_test" "false"}}"
 
 {{- end -}}
 {{- end -}}
 
-{{ range $host, $conts := host.Containers | groupByMultiFilter "" "KAP.le_host" "," }}
-{{- $first_cont := first $conts }}
-{{- $cid := formatClean $host }}
 
-LETSENCRYPT_{{$cid}}_HOST=( '{{$host}}' )
-LETSENCRYPT_{{$cid}}_EMAIL="{{ $first_cont.Labels.GetValue "KAP.le_email" $Default_email}}"
-LETSENCRYPT_{{$cid}}_TEST="{{ $first_cont.Labels.GetValue "KAP.le_test"}}"
+{{/* Removing Standalone Containers Support */}}
+{{/* {{ range $host, $conts := host.Containers | groupByMultiFilter "" "kap/le_host" "," }} */}}
+{{/* {{- $first_cont := first $conts }}  */}}
+{{/* {{- $cid := formatClean $host }} */}}
 
-{{- end -}}
+{{/* LETSENCRYPT_{{$cid}}_HOST=( '{{$host}}' ) */}}
+{{/* LETSENCRYPT_{{$cid}}_EMAIL="{{ $first_cont.Labels.GetValue "kap/le_email" $Default_email}}" */}}
+{{/* LETSENCRYPT_{{$cid}}_TEST="{{ $first_cont.Labels.GetValue "kap/le_test"}}" */}}
+
+{{/* {{- end -}} */}}
