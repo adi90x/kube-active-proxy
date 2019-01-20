@@ -208,6 +208,7 @@ server {
 
 	ssl_certificate /etc/nginx/certs/default.crt;
 	ssl_certificate_key /etc/nginx/certs/default.key;
+
 }
 {{- end -}}
 {{- end -}}
@@ -270,12 +271,12 @@ proxy_set_header X-Forwarded-Port $proxy_x_forwarded_port;
 proxy_set_header Proxy "";
 {{- end }}
 
-{{- $http_ports_services := services | getAllLabelValue "*" "KAP.http_listen_ports" ","}}
-{{- $http_ports_stand := host.Containers | getAllLabelValue "" "KAP.http_listen_ports" ","}}
+{{- $http_ports_services := services | getAllLabelValue "*" "kap/http_listen_ports" ","}}
+{{- $http_ports_stand := pods | getAllLabelValue "" "kap/http_listen_ports" ","}}
 {{- $http_ports := concatenateUnique $http_ports_services $http_ports_stand }}
 
-{{- $https_ports_services := services | getAllLabelValue "*" "KAP.https_listen_ports" ","}}
-{{- $https_ports_stand := host.Containers | getAllLabelValue "" "KAP.https_listen_ports" ","}}
+{{- $https_ports_services := services | getAllLabelValue "*" "kap/https_listen_ports" ","}}
+{{- $https_ports_stand := pods | getAllLabelValue "" "kap/https_listen_ports" ","}}
 {{- $https_ports := concatenateUnique $https_ports_services $https_ports_stand }}
 
 server {
@@ -310,11 +311,11 @@ server {
 
 {{- $default_port := or (env "DEFAULT_PORT") "80" }}
 {{- $host_filter := or (env "SPECIFIC_HOST") "*" }}
-{{- $KAP_name := or (env "KAP_NAME") "*" }}
+{{- $kap_name := or (env "KAP_NAME") "*" }}
 
 # kube Services config
 
-{{- range $opt, $services := services | groupByMulti "KAP.host" ","}}
+{{- range $opt, $services := services | groupByMulti "kap/host" ","}}
 {{- $parts := split $opt "=>"}}
 {{- $host := first $parts | trim }}
 {{- $dest := last $parts | trim }}
@@ -323,26 +324,24 @@ server {
 {{- $destPort := last $destParts }}
 {{- $alive := cell false }}
 
-{{range $service := $services}}
-{{- $addrLen := len $service.Ports }}
-{{- range $cont := $service.Containers | filterHost $host_filter | filterLabel "KAP.KAP_name" $KAP_name}}
-		{{- $online := (and (or (eq .Health "") (eq .Health "healthy")) (eq .State "running")) -}}
+{{range $service := $services | filterHost $host_filter | filterLabel "kap/kap_name" $kap_name }}
+{{- $addrLen := len $service.Spec.Ports }}
+{{- $online := (and (or (eq .Health "") (eq .Health "healthy")) (eq .State "running")) -}}
 		{{- if ne $destPort ""}}
-			{{- template "upstream" (dict "HOST" $host "FIRST" $alive "IP" $cont.Address "ONLINE" $online "PORT" $destPort) }}
+			{{- template "upstream" (dict "HOST" $host "FIRST" $alive "IP" $service.Spec.ClusterIP "ONLINE" $online "PORT" $destPort) }}
 			{{- $_ := $alive.Set true }}
 		{{- else if .Labels.Exists "KAP.port"}}
 			{{- $port := .Labels.GetValue "KAP.port" "80" }}
-			{{- template "upstream" (dict "HOST" $host "FIRST" $alive "IP" $cont.Address "ONLINE" $online "PORT" $port) }}
+			{{- template "upstream" (dict "HOST" $host "FIRST" $alive "IP" $service.Spec.ClusterIP "ONLINE" $online "PORT" $port) }}
 			{{- $_ := $alive.Set true }}
 		{{- else if eq $addrLen 1 }}
 			{{- $intport := (first $service.Ports).InternalPort }}
-			{{- template "upstream" (dict "HOST" $host "FIRST" $alive "IP" $cont.Address "ONLINE" $online "PORT" $intport) }}
+			{{- template "upstream" (dict "HOST" $host "FIRST" $alive "IP" $service.Spec.ClusterIP "ONLINE" $online "PORT" $intport) }}
 			{{- $_ := $alive.Set true }}
 		{{- else }}
-			{{- template "upstream" (dict "HOST" $host "FIRST" $alive "IP" $cont.Address "ONLINE" $online "PORT" $default_port) }}
+			{{- template "upstream" (dict "HOST" $host "FIRST" $alive "IP" $service.Spec.ClusterIP "ONLINE" $online "PORT" $default_port) }}
 			{{- $_ := $alive.Set true }}
 		{{- end }}
-{{- end -}}
 {{- end -}}
 {{- if $alive.Get }}
 	server localhost down;
@@ -353,43 +352,4 @@ server {
 {{ end -}}
 {{- end }}
 
-# Standalone containers config
 
-{{ if or (eq $host_filter "*") (eq host.Name $host_filter) }}
-{{- range $opt, $conts := host.Containers | filterLabel "KAP.KAP_name" $KAP_name | groupByMultiFilter "" "KAP.host" ","}}
-{{- $parts := split $opt "=>"}}
-{{- $host := first $parts | trim }}
-{{- $dest := last $parts | trim }}
-{{- $destParts := split (when (ne $host $dest) $dest ":") ":" }}
-{{- $destProto := first $destParts }}
-{{- $destPort := last $destParts }}
-{{- $alive := cell false }}
-
-{{ range $cont := $conts }}
-{{- $addrLen := len $cont.Ports }}
-		{{- $online := (and (or (eq .Health "") (eq .Health "healthy")) (eq .State "running")) -}}
-		{{- if ne $destPort ""}}
-			{{- template "upstream" (dict "HOST" $host "FIRST" $alive "IP" $cont.Address "ONLINE" $online "PORT" $destPort) }}
-			{{- $_ := $alive.Set true }}
-		{{- else if .Labels.Exists "KAP.port"}}
-			{{- $port := .Labels.GetValue "KAP.port" "80" }}
-			{{- template "upstream" (dict "HOST" $host "FIRST" $alive "IP" $cont.Address "ONLINE" $online "PORT" $port) }}
-			{{- $_ := $alive.Set true }}
-		{{- else if eq $addrLen 1 }}
-			{{- $intport := (first $cont.Ports).InternalPort }}
-			{{- template "upstream" (dict "HOST" $host "FIRST" $alive "IP" $cont.Address "ONLINE" $online "PORT" $intport ) }}
-			{{- $_ := $alive.Set true }}
-		{{- else }}
-			{{- template "upstream" (dict "HOST" $host "FIRST" $alive "IP" $cont.Address "ONLINE" $online "PORT" $default_port) }}
-			{{- $_ := $alive.Set true }}
-		{{- end }}
-{{- end -}}
-{{- if $alive.Get }}
-	server localhost down;
-}
-
-{{ template "server" (dict "HOST" $host "FIRST" (first $conts)  "PROTO" $destProto) }}
-
-{{ end -}}
-{{- end -}}
-{{- end -}}
