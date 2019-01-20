@@ -19,25 +19,25 @@ include {{ printf "/etc/nginx/vhost.d/%s_server" $host}};
 include /etc/nginx/vhost.d/default_server;
 {{- else }}
 
-{{- $http_ports := split (.FIRST.Labels.GetValue "KAP.http_listen_ports" "80" ) ","  }}
-{{- $https_ports := split (.FIRST.Labels.GetValue "KAP.https_listen_ports" "443" ) "," }}
+{{- $http_ports := split (GetValue .FIRST.Annotations "kap/http_listen_ports" "80" ) ","  }}
+{{- $https_ports := split (GetValue .FIRST.Annotations "kap/https_listen_ports" "443" ) "," }}
 
 {{- $default_host := or (env "DEFAULT_HOST") "" }}
 {{- $default_server := index (dict $host "" $default_host "default_server") $host }}
 
-{{- $proto := .FIRST.Labels.GetValue "KAP.proto" "http" | or .PROTO  }}
-{{- $https_method := .FIRST.Labels.GetValue "KAP.https_method" "redirect" }}
+{{- $proto := GetValue .FIRST.Annotations "kap/proto" "http" | or .PROTO  }}
+{{- $https_method := GetValue .FIRST.Annotations "kap/https_method" "redirect" }}
 
 {{- $vhostCert := (closest (dirList "/etc/nginx/certs") (printf "%s.crt" $host))}}
 
 {{- $vhostCert := trimSuffix $vhostCert ".crt" }}
 {{- $vhostCert := trimSuffix $vhostCert ".key" }}
 
-{{- $cert := .FIRST.Labels.GetValue "KAP.cert_name" $vhostCert }}
-{{- $token := .FIRST.Labels.GetValue "KAP.server_tokens" "" }}
-{{- $body_size := .FIRST.Labels.GetValue "KAP.client_max_body_size" "" }}
-{{- $le_bypass := .FIRST.Labels.GetValue "KAP.le_bypass" "" }}
-{{- $timeout := .FIRST.Labels.GetValue "KAP.timeout" "" }}
+{{- $cert := GetValue .FIRST.Annotations "kap/cert_name" $vhostCert }}
+{{- $token := GetValue .FIRST.Annotations "kap/server_tokens" "" }}
+{{- $body_size := GetValue .FIRST.Annotations "kap/client_max_body_size" "" }}
+{{- $le_bypass := GetValue .FIRST.Annotations "kap/le_bypass" "" }}
+{{- $timeout := GetValue .FIRST.Annotations "kap/timeout" "" }}
 
 {{- $is_https := (and (ne $https_method "nohttps") (ne $cert "") (exists (printf "/etc/nginx/certs/%s.crt" $cert)) (exists (printf "/etc/nginx/certs/%s.key" $cert))) }}
 
@@ -326,16 +326,16 @@ server {
 
 {{range $service := $services | filterHost $host_filter | filterLabel "kap/kap_name" $kap_name }}
 {{- $addrLen := len $service.Spec.Ports }}
-{{- $online := (and (or (eq .Health "") (eq .Health "healthy")) (eq .State "running")) -}}
+{{- $online := (and (or (eq .Spec.Type "ClusterIP") true) true ) -}}
 		{{- if ne $destPort ""}}
 			{{- template "upstream" (dict "HOST" $host "FIRST" $alive "IP" $service.Spec.ClusterIP "ONLINE" $online "PORT" $destPort) }}
 			{{- $_ := $alive.Set true }}
-		{{- else if .Labels.Exists "KAP.port"}}
-			{{- $port := .Labels.GetValue "KAP.port" "80" }}
+		{{- else if ExistValue .Annotations "kap/port"}}
+			{{- $port := GetValue .Annotations "kap/port" "80" }}
 			{{- template "upstream" (dict "HOST" $host "FIRST" $alive "IP" $service.Spec.ClusterIP "ONLINE" $online "PORT" $port) }}
 			{{- $_ := $alive.Set true }}
 		{{- else if eq $addrLen 1 }}
-			{{- $intport := (first $service.Ports).InternalPort }}
+			{{- $intport := (first $service.Spec.Ports).Port }}
 			{{- template "upstream" (dict "HOST" $host "FIRST" $alive "IP" $service.Spec.ClusterIP "ONLINE" $online "PORT" $intport) }}
 			{{- $_ := $alive.Set true }}
 		{{- else }}
