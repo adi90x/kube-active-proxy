@@ -1,31 +1,24 @@
 {{- $Default_email := or (env "DEFAULT_EMAIL") "foo@bar.com" -}}
 
-LETSENCRYPT_CONTAINERS=(
-{{- range $host, $services := services | groupByMulti "kap/le_host" "," -}}
-{{- range $service := $services -}}
-'{{ formatClean $host }}' {{ end -}}{{- end -}} )
-{{-/* Removing Standalone Containers Support */-}}
-{{/* {{- range $host, $conts := host.Containers | groupByMultiFilter "" "kap/le_host" "," -}}'{{ formatClean $host }}' {{ end -}} */}}
+{{- $hosts_services := services | getAllLabelValue "*" "kap/le_host" "," -}}
+{{- $hosts_stand := pods | getAllLabelValue "*" "kap/le_host" "," -}}
+{{- $hosts := concatenateUnique $hosts_services $hosts_stand -}}
 
-{{- range $host, $services := services | groupByMulti "kap/le_host" "," -}}
-{{- range $service := $services }}
+LETSENCRYPT_CONTAINERS=(
+{{- range $hosts -}}'{{ formatClean . }}'{{- end -}}
+)
+
+
+{{- $services := services | groupByMulti "kap/le_host" "," -}}
+{{- $pods := pods | groupByMulti "kap/le_host" "," -}}
+{{- $aggregated := uniqueMap $pods $services -}}
+{{- range $host, $agg := $aggregated -}}
+{{- $first := first $agg -}}
 {{- $cid := formatClean $host }}
 
 LETSENCRYPT_{{$cid}}_HOST=( '{{$host}}' )
-LETSENCRYPT_{{$cid}}_EMAIL="{{GetValue .Annotations "kap/le_email" $Default_email}}"
-LETSENCRYPT_{{$cid}}_TEST="{{GetValue .Annotations "kap/le_test" "false"}}"
+LETSENCRYPT_{{$cid}}_EMAIL="{{GetValue $first.Annotations "kap/le_email" $Default_email}}"
+LETSENCRYPT_{{$cid}}_TEST="{{GetValue $first.Annotations "kap/le_test" "false"}}"
 
-{{- end -}}
-{{- end -}}
+{{- end }}
 
-
-{{/* Removing Standalone Containers Support */}}
-{{/* {{ range $host, $conts := host.Containers | groupByMultiFilter "" "kap/le_host" "," }} */}}
-{{/* {{- $first_cont := first $conts }}  */}}
-{{/* {{- $cid := formatClean $host }} */}}
-
-{{/* LETSENCRYPT_{{$cid}}_HOST=( '{{$host}}' ) */}}
-{{/* LETSENCRYPT_{{$cid}}_EMAIL="{{ $first_cont.Labels.GetValue "kap/le_email" $Default_email}}" */}}
-{{/* LETSENCRYPT_{{$cid}}_TEST="{{ $first_cont.Labels.GetValue "kap/le_test"}}" */}}
-
-{{/* {{- end -}} */}}
