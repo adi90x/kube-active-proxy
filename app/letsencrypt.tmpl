@@ -5,7 +5,7 @@
 {{- $hosts := concatenateUnique $hosts_services $hosts_stand -}}
 
 LETSENCRYPT_CONTAINERS=(
-{{- range $hosts -}}'{{ formatClean . }}'{{- end -}}
+{{- range $hosts }}'{{ formatClean . }}' {{ end -}}
 )
 
 
