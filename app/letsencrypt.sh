@@ -81,6 +81,7 @@ update_certs() {
     done
 	
     reload_nginx
+    exit 0
 }
 
 update_certs
