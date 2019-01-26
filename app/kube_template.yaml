@@ -1,4 +1,4 @@
-poll-time: 10s
+poll-period: 10s
  
 templates:
   - path: "/app/nginx.tmpl"
