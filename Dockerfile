@@ -21,7 +21,7 @@ RUN apk add --no-cache nano ca-certificates unzip wget certbot bash openssl
 # Install Forego & Kubectl & Kube-Gen-KAP
 ADD https://storage.googleapis.com/kubernetes-release/release/v1.3.4/bin/linux/$IMAGE_ARCH_LITE/kubectl /usr/local/bin/kubectl
 
-RUN wget "https://gitlab.com/adi90x/kube-template-kap/builds/$VERSION_KUBE_GEN/download?job=compile-go" -O /tmp/kube-template-kap.zip \
+RUN wget "https://gitlab.com/adi90x/kube-template-kap/builds/$VERSION_KUBE_GEN/download?job=compile-go-$IMAGE_ARCH" -O /tmp/kube-template-kap.zip \
 	&& wget "https://bin.equinox.io/c/ekMN3bCZFUn/forego-stable-linux-$IMAGE_ARCH_LITE.tgz" -O /tmp/forego.tgz \
         && tar xvf /tmp/forego.tgz -C /usr/local/bin \
 	&& unzip /tmp/kube-template-kap.zip -d /usr/local/bin \
