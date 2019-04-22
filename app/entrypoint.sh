@@ -43,7 +43,7 @@ function check_dh_group {
       sleep 5
     done
 
-    kube-template-kap --once -t /app/letsencrypt.tmpl:/app/letsencrypt.conffdsfjiouhg
+    kube-template-kap --once -t /app/letsencrypt.tmpl:/app/letsencrypt.conf
 
     function cleanup {
       kill $proxy_pid
