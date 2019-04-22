@@ -1,4 +1,15 @@
-FROM nginx:alpine
+#Arg used for multi-arch building
+ARG IMAGE_ARCH=amd64
+
+#Add a specific build to import Qemu https://yen3.github.io/posts/2017/build_multi_arch_docker_image/
+FROM yen3/binfmt-register:0.1 as builder
+
+#Use 9-alpine as base to be in line with cloud9
+FROM ${IMAGE_ARCH}/nginx:alpine
+
+# Import Qemu from builder container
+COPY --from=builder /qemu/qemu-aarch64-static /usr/local/bin/qemu-aarch64-static
+
 MAINTAINER Adrien M amaurel90@gmail.com
 
 ENV DEBUG=false KAP_DEBUG="0" 
@@ -27,6 +38,9 @@ RUN chmod +x /app/letsencrypt.sh \
     && echo "daemon off;" >> /etc/nginx/nginx.conf \
     && sed -i 's/^http {/&\n    server_names_hash_bucket_size 128;/g' /etc/nginx/nginx.conf \
     && chmod u+x /app/remove 
+
+#Remove useless Qemu
+RUN rm -f /usr/local/bin/qemu-aarch64-static
 
 ENTRYPOINT ["/bin/bash", "/app/entrypoint.sh" ]
 CMD ["forego", "start", "-r"]
