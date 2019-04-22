@@ -17,13 +17,12 @@ ARG VERSION_KUBE_GEN="artifacts/master"
 ARG IMAGE_ARCH=amd64
 ARG IMAGE_ARCH_LITE="amd64"
 
-RUN apk add --no-cache nano ca-certificates unzip wget certbot bash openssl
+RUN apk add --no-cache nano ca-certificates unzip wget certbot bash openssl curl
 
 # Install Forego & Kubectl & Kube-Gen-KAP
-ADD https://storage.googleapis.com/kubernetes-release/release/v1.3.4/bin/linux/$IMAGE_ARCH_LITE/kubectl /usr/local/bin/kubectl
-
 RUN wget "https://gitlab.com/adi90x/kube-template-kap/builds/$VERSION_KUBE_GEN/download?job=compile-go-$IMAGE_ARCH" -O /tmp/kube-template-kap.zip \
 	&& wget "https://bin.equinox.io/c/ekMN3bCZFUn/forego-stable-linux-$IMAGE_ARCH_LITE.tgz" -O /tmp/forego.tgz \
+        && wget "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/$IMAGE_ARCH_LITE/kubectl" -O /usr/local/bin/kubectl \
         && tar xvf /tmp/forego.tgz -C /usr/local/bin \
 	&& unzip /tmp/kube-template-kap.zip -d /usr/local/bin \
 	&& chmod u+x /usr/local/bin/kube-template-kap \
