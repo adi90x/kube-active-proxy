@@ -23,14 +23,14 @@ before_script:
 build-image-amd64:
  stage: build
  script:
-    - docker build --build-arg IMAGE_ARCH=amd64 --build-arg ARBNODE_VERSION=$arbnode_version -t $CONTAINER_IMAGE/amd64:$tag .
+    - docker build --build-arg IMAGE_ARCH=amd64 --build-arg IMAGE_ARCH_LITE=amd64 --build-arg ARBNODE_VERSION=$arbnode_version -t $CONTAINER_IMAGE/amd64:$tag .
     - docker push $CONTAINER_IMAGE/amd64:$tag
 
 build-image-arm64v8:
  stage: build
  script:
     - docker run --privileged yen3/binfmt-register set aarch64
-    - docker build --build-arg IMAGE_ARCH=arm64v8 --build-arg ARBNODE_VERSION=$arbnode_version -t $CONTAINER_IMAGE/arm64v8:$tag .
+    - docker build --build-arg IMAGE_ARCH=arm64v8 --build-arg IMAGE_ARCH_LITE=arm64 --build-arg ARBNODE_VERSION=$arbnode_version -t $CONTAINER_IMAGE/arm64v8:$tag .
     - docker push $CONTAINER_IMAGE/arm64v8:$tag
 
 create-manifest:
