@@ -14,6 +14,7 @@ MAINTAINER Adrien M amaurel90@gmail.com
 
 ENV DEBUG=false KAP_DEBUG="0" 
 ARG VERSION_KUBE_GEN="artifacts/master"
+ARG IMAGE_ARCH=amd64
 ARG IMAGE_ARCH_LITE="amd64"
 
 RUN apk add --no-cache nano ca-certificates unzip wget certbot bash openssl
