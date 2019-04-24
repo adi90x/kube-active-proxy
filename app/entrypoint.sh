@@ -39,7 +39,7 @@ function check_dh_group {
     kubectl proxy &
     proxy_pid=$!
     
-    until curl -fsSL http://127.0.0.1:8001/api/v1 > /dev/null; do
+    until curl -fsSL http://127.0.0.1:8001/api/v1 &> /dev/null; do
       sleep 5
     done
 
