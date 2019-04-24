@@ -46,7 +46,7 @@ function check_dh_group {
     kube-template-kap --once -t /app/letsencrypt.tmpl:/app/letsencrypt.conf
 
     function cleanup {
-      kill $proxy_pid
+      kill -9 $proxy_pid
     }
     trap cleanup EXIT
 
