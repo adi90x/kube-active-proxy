@@ -45,4 +45,4 @@ RUN chmod +x /app/letsencrypt.sh \
 RUN rm -f /usr/local/bin/qemu-aarch64-static
 
 ENTRYPOINT ["/bin/bash", "/app/entrypoint.sh" ]
-CMD ["supervisord", "-n","-c", "/app/supervisord.conf"]
+CMD ["supervisord", "-c", "/app/supervisord.conf"]
