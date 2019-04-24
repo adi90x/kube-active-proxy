@@ -16,7 +16,6 @@ function check_writable_directory {
         exit 1
     fi
     rm -f $dir/.check_writable
-	echo "Starting Kube Active Proxy !"
 }
 
 function check_dh_group {
@@ -74,10 +73,14 @@ function check_dh_group {
     
     #Deleting default.conf if it is there
     rm -f /etc/nginx/conf.d/default.conf
-    
+      
+
     #Setting up crontab value 
     rm /etc/crontabs/root
     : ${CRON="0 2 * * *"}
     (crontab -l 2>/dev/null; echo "$CRON /app/letsencrypt.sh") | crontab -
+
+    #Logging
+    echo "Starting Kube Active Proxy - Version echo "$KAP_VERSION""
 	
 	exec "$@"

@@ -12,10 +12,13 @@ COPY --from=builder /qemu/qemu-aarch64-static /usr/local/bin/qemu-aarch64-static
 
 MAINTAINER Adrien M amaurel90@gmail.com
 
-ENV DEBUG=false KAP_DEBUG="0" 
 ARG VERSION_KUBE_GEN="artifacts/master"
 ARG IMAGE_ARCH=amd64
 ARG IMAGE_ARCH_LITE="amd64"
+ARG KAP_VERSION=master
+ENV DEBUG=false KAP_DEBUG="0" KAP_VERSION=$KAP_VERSION
+
+
 
 RUN apk add --no-cache nano ca-certificates unzip wget certbot bash openssl supervisor curl
 
