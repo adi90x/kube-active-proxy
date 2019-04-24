@@ -81,6 +81,6 @@ function check_dh_group {
     (crontab -l 2>/dev/null; echo "$CRON /app/letsencrypt.sh") | crontab -
 
     #Logging
-    echo "Starting Kube Active Proxy - Version echo "$KAP_VERSION""
+    echo "Starting Kube Active Proxy - Version "$KAP_VERSION""
 	
 	exec "$@"
