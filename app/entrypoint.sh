@@ -16,6 +16,7 @@ function check_writable_directory {
         exit 1
     fi
     rm -f $dir/.check_writable
+	echo "Starting Kube Active Proxy !"
 }
 
 function check_dh_group {
