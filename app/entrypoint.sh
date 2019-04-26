@@ -36,19 +36,7 @@ function check_dh_group {
     check_dh_group
     
     #Recreating needed certs
-    kubectl proxy &
-    proxy_pid=$!
-    
-    until curl -fsSL http://127.0.0.1:8001/api/v1 &> /dev/null; do
-      sleep 5
-    done
-
-    kube-template-kap --once -t /app/letsencrypt.tmpl:/app/letsencrypt.conf
-
-    function cleanup {
-      kill -9 $proxy_pid
-    }
-    trap cleanup EXIT
+    kube-template-kap --guess-kube-api-settings --once -t /app/letsencrypt.tmpl:/app/letsencrypt.conf
 
     source /app/letsencrypt.conf
 
