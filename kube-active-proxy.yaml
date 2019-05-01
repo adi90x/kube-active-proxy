@@ -1,0 +1,68 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  annotations:
+    description: Nginx Reverse Proxy for Services and Pods powered by annotations
+  labels:
+    app: kube-active-proxy
+  name: kube-active-proxy
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: kube-active-proxy
+  template:
+    metadata:
+      labels:
+        app: kube-active-proxy
+    spec:
+      containers:
+      - env:
+        - name: KAP_DEBUG
+          value: "10"
+        image: registry.gitlab.com/adi90x/kube-active-proxy:latest
+        imagePullPolicy: Always
+        name: kube-active-proxy
+        ports:
+        - containerPort: 80
+          hostPort: 80
+          protocol: TCP
+        - containerPort: 443
+          hostPort: 443
+          protocol: TCP
+        securityContext:
+          privileged: true
+      dnsPolicy: ClusterFirst
+      hostNetwork: true
+      nodeSelector:
+        kap/front: "true"
+      restartPolicy: Always
+      serviceAccount: kube-active-proxy
+      serviceAccountName: kube-active-proxy
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kube-active-proxy
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: kube-active-proxy
+rules:
+- apiGroups: [""]
+  resources: ["endpoints","pods","services","nodes"]
+  verbs: ["get","list","watch"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: kube-active-proxy
+subjects:
+- kind: ServiceAccount
+  name: kube-active-proxy # Name is case sensitive
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: kube-active-proxy
+  apiGroup: rbac.authorization.k8s.io

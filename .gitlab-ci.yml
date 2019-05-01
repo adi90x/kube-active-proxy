@@ -7,7 +7,8 @@ variables:
 
 image: docker
 services:
-  - docker:dind
+  - name: docker:dind
+    command: ["--experimental"]
 
 before_script:
    - apk add --no-cache curl
@@ -15,6 +16,7 @@ before_script:
    - mkdir -p /root/.docker && touch /root/.docker/config.json
    - 'echo {\"experimental\": \"enabled\"} >> /root/.docker/config.json'
    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
+   - kap_version=`echo "$(echo $CI_COMMIT_REF_NAME)"@"$(echo $CI_COMMIT_SHA | cut -c -7)"`
    - version_available=$(curl --write-out %{http_code} --silent --output /dev/null https://gitlab.com/adi90x/kube-template-kap/builds/artifacts/$CI_BUILD_REF_NAME/browse?job=compile-go)
    - if [ $version_available == "302" ]; then build_version=artifacts/$CI_BUILD_REF_NAME; else build_version="artifacts/master"; fi
    - if [ $FORCE_KUBE_GEN_VERSION != "" ]; then build_version=$FORCE_KUBE_GEN_VERSION/artifacts; fi
@@ -23,14 +25,14 @@ before_script:
 build-image-amd64:
  stage: build
  script:
-    - docker build --build-arg IMAGE_ARCH=amd64 --build-arg IMAGE_ARCH_LITE=amd64 --build-arg ARBNODE_VERSION=$arbnode_version -t $CONTAINER_IMAGE/amd64:$tag .
+    - docker build --squash --build-arg IMAGE_ARCH=amd64 --build-arg IMAGE_ARCH_LITE=amd64 --build-arg KAP_VERSION=$kap_version -t $CONTAINER_IMAGE/amd64:$tag .
     - docker push $CONTAINER_IMAGE/amd64:$tag
 
 build-image-arm64v8:
  stage: build
  script:
     - docker run --privileged yen3/binfmt-register set aarch64
-    - docker build --build-arg IMAGE_ARCH=arm64v8 --build-arg IMAGE_ARCH_LITE=arm64 --build-arg ARBNODE_VERSION=$arbnode_version -t $CONTAINER_IMAGE/arm64v8:$tag .
+    - docker build --squash --build-arg IMAGE_ARCH=arm64v8 --build-arg IMAGE_ARCH_LITE=arm64 --build-arg KAP_VERSION=$kap_version -t $CONTAINER_IMAGE/arm64v8:$tag .
     - docker push $CONTAINER_IMAGE/arm64v8:$tag
 
 create-manifest:

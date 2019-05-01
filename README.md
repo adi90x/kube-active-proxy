@@ -9,9 +9,9 @@ Kube Active Proxy is a copy of my [Rancher-Active-Proxy](https://gitlab.com/adi9
 
 Kube Active Proxy is based on the excellent idea of [jwilder/nginx-proxy](https://github.com/jwilder/nginx-proxy).
 
-Kube Active Proxy replace docker-gen by kube-template-kap [adi90x/kube-gen-kap](https://github.com/adi90x/kube-template-kap) ( a fork of the also excellent [3cky/kube-template](https://github.com/3cky/kube-template) adding some more function )
+Kube Active Proxy replace docker-gen by kube-template-kap [adi90x/kube-template-kap](https://github.com/adi90x/kube-template-kap) ( a fork of the also excellent [3cky/kube-template](https://github.com/3cky/kube-template) adding some more function )
 
-Kube Active Proxy use label instead of environmental value.
+Kube Active Proxy use annotation on pod or services to setup nginx proxy.
 
 I would recommend to use latest image from DockerHub or you can use tag versions. Keep in mind that branch are mostly development features and could not work as expected.
 
@@ -23,36 +23,41 @@ TO-DO
 
 Minimal Params To run it:
 
-    $ docker run -d -p 80:80  adi90x/kube-active-proxy
+    $ kubectl -f apply kube-active-proxy.yaml
 
-Then start any containers you want proxied with a label `kap.host=subdomain.youdomain.com`
+This will create a daemonset with an host selector based on the following label: `kap/front="true"` - Add this label to any node to start using it as a KAP frontend.
+This will also create a Service Account for Kube-Active-Proxy with access to Services and Pods in the namespace set. 
 
-    $ docker run -l kap.host=foo.bar.com  ...
+Then start any pods or service you want proxied with an annotation : `kap/host=subdomain.youdomain.com`
+
+    $ metadata:
+        annotations:
+           kap/host: foo.bar.com
 
 The containers being proxied must [expose](https://docs.docker.com/reference/run/#expose-incoming-ports) the port to be proxied, either by using the `EXPOSE` directive in their `Dockerfile` or by using the `--expose` flag to `docker run` or `docker create`.
 
-Provided your DNS is setup to forward foo.bar.com to the a host running `kube-active-proxy`, the request will be routed to a container with the `kap.host` label set.
+Provided your DNS is setup to forward foo.bar.com to the a host running `kube-active-proxy`, the request will be routed to a container with the `kap/host` label set.
 
-#### Summary of available labels for proxied containers.
+#### Summary of available labels for proxied pods/services.
 
 
 |       Label                |            Description         |
 | ---------------------------|------------------------------- |
-| `kap.host`                 | Virtual host to use ( several value could be separate by `,` )
-| `kap.port`                 | Port of the container to use ( only needed if several port are exposed ). Default `Expose Port` or `80`
-| `kap.proto`                | Protocol used to contact container ( http,https,uwsgi ). Default : `http`
-| `kap.timeout`              | Timeout for reading from this container ( in seconds ). Default : nginx default (60s)
-| `kap.cert_name`            | Certificate name to use for the virtual host. Default `kap.host`
-| `kap.https_method`         | Https method (redirect, noredirect, nohttps). Default : `redirect`
-| `kap.le_host`              | Certificate to create/renew with Letsencrypt
-| `kap.le_email`             | Email to use for Letsencrypt
-| `kap.le_test  `            | Set to true to use stagging letsencrypt server
-| `kap.le_bypass`            | Set to true to create a special bypass to use LE
-| `kap.http_listen_ports`    | External Port you want kube-Active-Proxy to listen to http for this server ( Default : `80` )
-| `kap.https_listen_ports`   | External Port you want kube-Active-Proxy to listen to https for this server ( Default : `443` )
-| `kap.server_tokens`    	 | Enable to specify the server_token value per container
-| `kap.client_max_body_size` | Enable to specify the client_max_body_size directive per container
-| `kap.kap_name`             | If `kap_NAME` is specified for a kap instance only container with label value matching `kap_NAME` value will be publish
+| `kap/host`                 | Virtual host to use ( several value could be separate by `,` )
+| `kap/port`                 | Port of the container to use ( only needed if several port are exposed ). Default `Expose Port` or `80`
+| `kap/proto`                | Protocol used to contact container ( http,https,uwsgi ). Default : `http`
+| `kap/timeout`              | Timeout for reading from this container ( in seconds ). Default : nginx default (60s)
+| `kap/cert_name`            | Certificate name to use for the virtual host. Default `kap/host`
+| `kap/https_method`         | Https method (redirect, noredirect, nohttps). Default : `redirect`
+| `kap/le_host`              | Certificate to create/renew with Letsencrypt
+| `kap/le_email`             | Email to use for Letsencrypt
+| `kap/le_test  `            | Set to true to use stagging letsencrypt server
+| `kap/le_bypass`            | Set to true to create a special bypass to use LE
+| `kap/http_listen_ports`    | External Port you want kube-Active-Proxy to listen to http for this server ( Default : `80` )
+| `kap/https_listen_ports`   | External Port you want kube-Active-Proxy to listen to https for this server ( Default : `443` )
+| `kap/server_tokens`    	   | Enable to specify the server_token value per container
+| `kap/client_max_body_size` | Enable to specify the client_max_body_size directive per container
+| `kap/kap_name`             | If `kap_name` is specified for a kap instance only container with label value matching `kap_name` value will be publish
 
 #### Summary of environment variable available for Kube Active Proxy.
 
@@ -62,40 +67,28 @@ Provided your DNS is setup to forward foo.bar.com to the a host running `kube-ac
 | `CRON`             | Cron like expression to define when certs are renew. Default : `0 2 * * *`
 | `DEFAULT_HOST`     | Default Nginx host.
 | `DEFAULT_EMAIL`    | Default Email for Letsencrypt.
-| `KAP_DEBUG` 		 | Define kube-Gen-kap verbosity (Valid values: "debug", "info", "warn", and "error"). Default: `info`
-| `DEFAULT_PORT` 	 | Default port use for containers ( Default : `80` )
+| `KAP_DEBUG` 		   | Define kube-Gen-kap verbosity (Valid values: "debug", "info", "warn", and "error"). Default: `info`
+| `DEFAULT_PORT` 	   | Default port use for containers ( Default : `80` )
 | `SPECIFIC_HOST` 	 | Limit kap to only containers of a specific host name
-| `kap_NAME` 	     | If specify kap will only publish service with `kap.kap_name = kap_NAME`
+| `KAP_NAME` 	       | If specify kap will only publish service with `kap/kap_name = kap_NAME`
 
 #### Quick Summary of interesting volume to mount.
 
 |       Path            |            Description         |
 | --------------------- | ------------------------------ |
 | `/etc/letsencrypt`    | Folder with all certificates used for https and Letsencrypt parameters
-| `/etc/nginx/htpasswd` | Basic Authentication Support ( file should be `kap.host`)
-| `/etc/nginx/vhost.d`  | Specifc vhost configuration ( file should be `kap.host`) . Location configuration should end with `_location`
-
-#### Special Attention for standalone containers
-
-Kube Active Proxy is also able to work for standalone containers on the host it is launched.
-
-There is only one limit to this : You should not use the same host name ( `kap.host` label ) for a standalone container and for a service.
-
-This feature even enables you to proxy kube-server, just start it with something like that :
-
-`docker run -d --restart=unless-stopped -p 8080:8080 --name=kube-server -l kap.host=admin.foo.com -l kap.port=8080 -l kap.le_host=admin.foo.com -l  kap.le_email=foo@bar.com -l io.kube.container.pull_image=always kube/server`
-
-In this case `admin.foo.com` will enable you to acces kube administration, but it is better to keep port 8080 exposed and use `http://foo.com:8080` as the host registration URL.
+| `/etc/nginx/htpasswd` | Basic Authentication Support ( file should be `kap/host`)
+| `/etc/nginx/vhost.d`  | Specifc vhost configuration ( file should be `kap/host`) . Location configuration should end with `_location`
 
 #### Let's Encrypt support out of box
 
 Kube Active Proxy is using `certbot` from Let's Encrypt in order to automatically get SSL certificates for containers.
 
-In order to enable that feature you need to add `kap.le_host` label to the container ( you probably want it to be equal to `kap.host`)
+In order to enable that feature you need to add `kap/le_host` label to the container ( you probably want it to be equal to `kap/host`)
 
-And you should either start Kube Active Proxy with environment variable `DEFAULT_EMAIL` or specify `kap.le_email` as a container label.
+And you should either start Kube Active Proxy with environment variable `DEFAULT_EMAIL` or specify `kap/le_email` as a container label.
 
-If you are developing I recommend to add `kap.le_test=true` to the container in order to use Let's Encrypt staging environment and to not exceed limits.
+If you are developing I recommend to add `kap/le_test=true` to the container in order to use Let's Encrypt staging environment and to not exceed limits.
 
 #### SAN certificates
 
@@ -103,7 +96,7 @@ Kube Active Proxy support SAN certifcates ( one certificate for several domains 
 
 To create a SAN certificate you need to separate hostnames with ";" ( instead of "," for separate domains)
 
-`kap.le_host=admin.foo.com;api.foo.com;mail.foo.com`
+`kap/le_host=admin.foo.com;api.foo.com;mail.foo.com`
 
 This will create a single certificate matching : admin.foo.com, api.foo.com, mail.foo.com .
 The certificate created will be named `admin.foo.com` but symlink will be create to match all domains.
@@ -111,23 +104,23 @@ The certificate created will be named `admin.foo.com` but symlink will be create
 
 ### Multiple Ports
 
-If your container exposes multiple ports, Kube Active Proxy will use `kap.port` label, then use the exposed port if there is only one port exposed, or default to `DEFAULT_PORT` environmental variable ( which is set by default to `80` ).
-Or you can try your hand at the [Advanced `kap.host` syntax](#advanced-kaphost-syntax).
+If your container exposes multiple ports, Kube Active Proxy will use `kap/port` label, then use the exposed port if there is only one port exposed, or default to `DEFAULT_PORT` environmental variable ( which is set by default to `80` ).
+Or you can try your hand at the [Advanced `kap/host` syntax](#advanced-kaphost-syntax).
 
 ### Special ByPass for Let's Encrypt
 
 If your container uses its own letsencrypt process to get some certificates
-Set `kap.le_bypass` to `true` to add a location to the http server block to forward `/.well-known/acme-certificate/` to upstream through http instead of redirecting it to https
+Set `kap/le_bypass` to `true` to add a location to the http server block to forward `/.well-known/acme-certificate/` to upstream through http instead of redirecting it to https
 
-### Advanced `kap.host` syntax
+### Advanced `kap/host` syntax
 
-Using the Advanced `kap.host` syntax you can specify multiple host names to each go to their own backend port.
-Basically this provides support for `kap.host`, `kap.port`, and `kap.proto` all in one field.
+Using the Advanced `kap/host` syntax you can specify multiple host names to each go to their own backend port.
+Basically this provides support for `kap/host`, `kap/port`, and `kap/proto` all in one field.
 
 For example, given the following:
 
 ```
-kap.host=api.example.com=>http:80,api-admin.example.com=>http:8001,secure.example.com=>https:8443
+kap/host=api.example.com=>http:80,api-admin.example.com=>http:8001,secure.example.com=>https:8443
 ```
 
 This would yield 3 different server/upstream configurations...
@@ -145,12 +138,12 @@ If needed you can use kube-Active-Proxy to listen for different ports.
 
 In this case, you can specify on which port Kube Active Proxy should listen for a specific hostname :
 
-`docker run -d -l kap.host=foo.bar.com -l kap.http_listen_ports="81,8081" -l kap.port="53" containerexposing/port53`
+`docker run -d -l kap/host=foo.bar.com -l kap/http_listen_ports="81,8081" -l kap/port="53" containerexposing/port53`
 
-In this situation Kube Active Proxy will listen for request matching `kap.host` on both port `81` and `8081` of your host
+In this situation Kube Active Proxy will listen for request matching `kap/host` on both port `81` and `8081` of your host
 and route those request to port `53` of your container.
 
-Likewise, `kap.https_listen_ports` will work for https requests.
+Likewise, `kap/https_listen_ports` will work for https requests.
 
 If you are not using port `80` and `443` at all you won't be able to use Let's Encrypt Automatic certificates.
 
@@ -176,7 +169,7 @@ If you are starting it with kube do not forget to set Auto Restart : Never (Star
 
 ### Per-host server configuration
 
-If you want to 100% personalize your server section on a per-`kap.host` basis, add your server configuration in a file under `/etc/nginx/vhost.d`
+If you want to 100% personalize your server section on a per-`kap/host` basis, add your server configuration in a file under `/etc/nginx/vhost.d`
 The file should use the suffix `_server`.
 
 For example, if you have a virtual host named `app.example.com` and you have configured a proxy_cache `my-cache` in another custom file, you could tell it to use a proxy cache as follows:
@@ -198,19 +191,19 @@ server {
 
 ```
 
-If you are using multiple hostnames for a single container (e.g. `kap.host=example.com,www.example.com`), the virtual host configuration file must exist for each hostname.
+If you are using multiple hostnames for a single container (e.g. `kap/host=example.com,www.example.com`), the virtual host configuration file must exist for each hostname.
 If you would like to use the same configuration for multiple virtual host names, you can use a symlink.
 
 ### Per-host server default configuration
 
 If you want most of your virtual hosts to use a default single `server` block configuration and then override it on a few specific ones, add a `/etc/nginx/vhost.d/default_server` file.
-This file will be used on any virtual host which does not have a `/etc/nginx/vhost.d/{kap.host}_server` file associated with it.
+This file will be used on any virtual host which does not have a `/etc/nginx/vhost.d/{kap/host}_server` file associated with it.
 
 ### Limit kap to some containers
 
 If you want a kap instance to only publish some specific containers/services, you can start the kap container with environment variable `kap_NAME = example`
-In that situation, all containers to be published by this instance of kap should have a label `kap.kap_name = example`
-If a container should be published by several kap instances just use a label matching regex like `kap.kap_name = internal,external` to be published by kap instance named `internal` or `external`
+In that situation, all containers to be published by this instance of kap should have a label `kap/kap_name = example`
+If a container should be published by several kap instances just use a label matching regex like `kap/kap_name = internal,external` to be published by kap instance named `internal` or `external`
 
 ***
 
@@ -227,11 +220,11 @@ You can also use wildcards at the beginning and the end of host name, like `*.ba
 ### SSL Backends
 
 If you would like the reverse proxy to connect to your backend using HTTPS instead of HTTP
-set `kap.proto=https` on the backend container.
+set `kap/proto=https` on the backend container.
 
 ### uWSGI Backends
 
-If you would like to connect to uWSGI backend, set `kap.proto=uwsgi` on the backend container.
+If you would like to connect to uWSGI backend, set `kap/proto=uwsgi` on the backend container.
 Your backend container should than listen on a port rather than a socket and expose that port.
 
 ### Default Host
@@ -251,7 +244,7 @@ To enable SSL:
 
 The contents of `/path/to/certs` should contain the certificates and private keys for any virtual
 hosts in use.  The certificate and keys should be named after the virtual host with a `.crt` and
-`.key` extension.  For example, a container with label `kap.host=foo.bar.com` should have a
+`.key` extension.  For example, a container with label `kap/host=foo.bar.com` should have a
 `foo.bar.com.crt` and `foo.bar.com.key` file in the certs directory.
 
 If you are running the container in a virtualized environment (Hyper-V, VirtualBox, etc...),
@@ -261,20 +254,20 @@ By default, Docker is not able to mount directories on the host machine to conta
 ### Diffie-Hellman Groups
 
 If you have Diffie-Hellman groups enabled, the files should be named after the virtual host with a
-`dhparam` suffix and `.pem` extension. For example, a container with `kap.host=foo.bar.com`
+`dhparam` suffix and `.pem` extension. For example, a container with `kap/host=foo.bar.com`
 should have a `foo.bar.com.dhparam.pem` file in the certs directory.
 
 ### Wildcard Certificates
 
 Wildcard certificates and keys should be named after the domain name with a `.crt` and `.key` extension.
-For example `kap.host=foo.bar.com` would use cert name `bar.com.crt` and `bar.com.key`.
+For example `kap/host=foo.bar.com` would use cert name `bar.com.crt` and `bar.com.key`.
 
 ### SNI
 
-If your certificate(s) supports multiple domain names, you can start a container with `kap.cert_name=<name>`
+If your certificate(s) supports multiple domain names, you can start a container with `kap/cert_name=<name>`
 to identify the certificate to be used.  For example, a certificate for `*.foo.com` and `*.bar.com`
-could be named `shared.crt` and `shared.key`.  A container running with `kap.host=foo.bar.com`
-and `kap.cert_name=shared` will then use this shared cert.
+could be named `shared.crt` and `shared.key`.  A container running with `kap/host=foo.bar.com`
+and `kap/cert_name=shared` will then use this shared cert.
 
 ### How SSL Support Works
 
@@ -295,9 +288,9 @@ will allow a client browser to make a SSL connection (likely w/ a warning) and s
 a 503.
 
 To serve traffic in both SSL and non-SSL modes without redirecting to SSL, you can include the
-label  `kap.https_method=noredirect` (the default is `kap.https_method=redirect`).  You can also
-disable the non-SSL site entirely with `kap.https_method=nohttp`. `kap.https_method` must be specified
-on each container for which you want to override the default behavior.  If `kap.https_method=noredirect` is
+label  `kap/https_method=noredirect` (the default is `kap/https_method=redirect`).  You can also
+disable the non-SSL site entirely with `kap/https_method=nohttp`. `kap/https_method` must be specified
+on each container for which you want to override the default behavior.  If `kap/https_method=noredirect` is
 used, Strict Transport Security (HSTS) is disabled to prevent HTTPS users from being redirected by the
 client.  If you cannot get to the HTTP site after changing this setting, your browser has probably cached
 the HSTS policy and is automatically redirecting you back to HTTPS.  You will need to clear your browser's
@@ -305,8 +298,8 @@ HSTS cache or use an incognito window / different browser.
 
 ### Basic Authentication Support
 
-In order to be able to secure your virtual host, you have to create a file named as its equivalent `kap.host` label on directory
-/etc/nginx/htpasswd/`kap.host`
+In order to be able to secure your virtual host, you have to create a file named as its equivalent `kap/host` label on directory
+/etc/nginx/htpasswd/`kap/host`
 
 ```
 $ docker run -d -p 80:80 -p 443:443 \
@@ -318,13 +311,13 @@ $ docker run -d -p 80:80 -p 443:443 \
 You'll need apache2-utils on the machine where you plan to create the htpasswd file.
 Or you can use an nginx container to create the file ( using OpenSSL as explained in [Nginx Readme](http://wiki.nginx.org/Faq#How_do_I_generate_an_.htpasswd_file_without_having_Apache_tools_installed.3F) )
 
-`docker run -it nginx printf "Username_to_use:$(openssl passwd -crypt Password_to_use)\n" >> /path/to/htpasswd/{kap.host}`
+`docker run -it nginx printf "Username_to_use:$(openssl passwd -crypt Password_to_use)\n" >> /path/to/htpasswd/{kap/host}`
 
 A default htpasswd can be used to secure all hosts using this proxy. Good for development environments to keep prying eyes out. To use, create the htpasswd file named 'default' here: `/etc/nginx/htpasswd/default`.
 
 ### Custom Nginx Configuration
 
-If you need to configure Nginx beyond what is possible using environment variables, you can provide custom configuration files on either a proxy-wide or per-`kap.host` basis.
+If you need to configure Nginx beyond what is possible using environment variables, you can provide custom configuration files on either a proxy-wide or per-`kap/host` basis.
 
 ### Replacing default proxy settings
 
@@ -371,7 +364,7 @@ Or it can be done by mounting in your custom configuration in your `docker run` 
 
 ### Per-VIRTUAL_HOST
 
-To add settings on a per-`kap.host` basis, add your configuration file under `/etc/nginx/vhost.d`. Unlike in the proxy-wide case, which allows multiple config files with any name ending in `.conf`, the per-`kap.host` file must be named exactly after the `kap.host`.
+To add settings on a per-`kap/host` basis, add your configuration file under `/etc/nginx/vhost.d`. Unlike in the proxy-wide case, which allows multiple config files with any name ending in `.conf`, the per-`kap/host` file must be named exactly after the `kap/host`.
 
 In order to allow virtual hosts to be dynamically configured as backends are added and removed, it makes the most sense to mount an external directory as `/etc/nginx/vhost.d` as opposed to using derived images or mounting individual configuration files.
 
@@ -380,7 +373,7 @@ For example, if you have a virtual host named `app.example.com`, you could provi
     $ docker run -d -p 80:80 -p 443:443 -v /path/to/vhost.d:/etc/nginx/vhost.d:ro adi90x/kube-active-proxy
     $ { echo 'server_tokens off;'; echo 'client_max_body_size 100m;'; } > /path/to/vhost.d/app.example.com
 
-If you are using multiple hostnames for a single container (e.g. `kap.host=example.com,www.example.com`), the virtual host configuration file must exist for each hostname. If you would like to use the same configuration for multiple virtual host names, you can use a symlink:
+If you are using multiple hostnames for a single container (e.g. `kap/host=example.com,www.example.com`), the virtual host configuration file must exist for each hostname. If you would like to use the same configuration for multiple virtual host names, you can use a symlink:
 
     $ { echo 'server_tokens off;'; echo 'client_max_body_size 100m;'; } > /path/to/vhost.d/www.example.com
     $ ln -s /path/to/vhost.d/www.example.com /path/to/vhost.d/example.com
@@ -388,11 +381,11 @@ If you are using multiple hostnames for a single container (e.g. `kap.host=examp
 ### Per-VIRTUAL_HOST default configuration
 
 If you want most of your virtual hosts to use a default single configuration and then override on a few specific ones, add those settings to the `/etc/nginx/vhost.d/default` file. This file
-will be used on any virtual host which does not have a `/etc/nginx/vhost.d/{kap.host}` file associated with it.
+will be used on any virtual host which does not have a `/etc/nginx/vhost.d/{kap/host}` file associated with it.
 
 ### Per-VIRTUAL_HOST location configuration
 
-To add settings to the "location" block on a per-`kap.host` basis, add your configuration file under `/etc/nginx/vhost.d`
+To add settings to the "location" block on a per-`kap/host` basis, add your configuration file under `/etc/nginx/vhost.d`
 just like the previous section except with the suffix `_location`.
 
 For example, if you have a virtual host named `app.example.com` and you have configured a proxy_cache `my-cache` in another custom file, you could tell it to use a proxy cache as follows:
@@ -400,7 +393,7 @@ For example, if you have a virtual host named `app.example.com` and you have con
     $ docker run -d -p 80:80 -p 443:443 -v /path/to/vhost.d:/etc/nginx/vhost.d:ro adi90x/kube-active-proxy
     $ { echo 'proxy_cache my-cache;'; echo 'proxy_cache_valid  200 302  60m;'; echo 'proxy_cache_valid  404 1m;' } > /path/to/vhost.d/app.example.com_location
 
-If you are using multiple hostnames for a single container (e.g. `kap.host=example.com,www.example.com`), the virtual host configuration file must exist for each hostname. If you would like to use the same configuration for multiple virtual host names, you can use a symlink:
+If you are using multiple hostnames for a single container (e.g. `kap/host=example.com,www.example.com`), the virtual host configuration file must exist for each hostname. If you would like to use the same configuration for multiple virtual host names, you can use a symlink:
 
     $ { echo 'proxy_cache my-cache;'; echo 'proxy_cache_valid  200 302  60m;'; echo 'proxy_cache_valid  404 1m;' } > /path/to/vhost.d/app.example.com_location
     $ ln -s /path/to/vhost.d/www.example.com /path/to/vhost.d/example.com
@@ -408,7 +401,7 @@ If you are using multiple hostnames for a single container (e.g. `kap.host=examp
 ### Per-VIRTUAL_HOST location default configuration
 
 If you want most of your virtual hosts to use a default single `location` block configuration and then override on a few specific ones, add those settings to the `/etc/nginx/vhost.d/default_location` file. This file
-will be used on any virtual host which does not have a `/etc/nginx/vhost.d/{kap.host}` file associated with it.
+will be used on any virtual host which does not have a `/etc/nginx/vhost.d/{kap/host}` file associated with it.
 
 ## Contributing
 

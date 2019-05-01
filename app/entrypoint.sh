@@ -36,19 +36,7 @@ function check_dh_group {
     check_dh_group
     
     #Recreating needed certs
-    kubectl proxy &
-    proxy_pid=$!
-    
-    until curl -fsSL http://127.0.0.1:8001/api/v1 > /dev/null; do
-      sleep 5
-    done
-
-    kube-template-kap --once -t /app/letsencrypt.tmpl:/app/letsencrypt.conf
-
-    function cleanup {
-      kill $proxy_pid
-    }
-    trap cleanup EXIT
+    kube-template-kap --guess-kube-api-settings --once -t /app/letsencrypt.tmpl:/app/letsencrypt.conf
 
     source /app/letsencrypt.conf
 
@@ -73,10 +61,14 @@ function check_dh_group {
     
     #Deleting default.conf if it is there
     rm -f /etc/nginx/conf.d/default.conf
-    
+      
+
     #Setting up crontab value 
     rm /etc/crontabs/root
     : ${CRON="0 2 * * *"}
     (crontab -l 2>/dev/null; echo "$CRON /app/letsencrypt.sh") | crontab -
+
+    #Logging
+    echo "Starting Kube Active Proxy - Version "$KAP_VERSION""
 	
 	exec "$@"
