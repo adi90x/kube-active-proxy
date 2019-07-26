@@ -271,12 +271,12 @@ proxy_set_header X-Forwarded-Port $proxy_x_forwarded_port;
 proxy_set_header Proxy "";
 {{- end }}
 
-{{- $http_ports_services := services | getAllLabelValue "*" "kap/http_listen_ports" ","}}
-{{- $http_ports_stand := pods | getAllLabelValue "" "kap/http_listen_ports" ","}}
+{{- $http_ports_services := services "" "" | getAllLabelValue "*" "kap/http_listen_ports" ","}}
+{{- $http_ports_stand := pods "" "" | getAllLabelValue "" "kap/http_listen_ports" ","}}
 {{- $http_ports := concatenateUnique $http_ports_services $http_ports_stand }}
 
-{{- $https_ports_services := services | getAllLabelValue "*" "kap/https_listen_ports" ","}}
-{{- $https_ports_stand := pods | getAllLabelValue "" "kap/https_listen_ports" ","}}
+{{- $https_ports_services := services "" "" | getAllLabelValue "*" "kap/https_listen_ports" ","}}
+{{- $https_ports_stand := pods "" "" | getAllLabelValue "" "kap/https_listen_ports" ","}}
 {{- $https_ports := concatenateUnique $https_ports_services $https_ports_stand }}
 
 server {
@@ -315,8 +315,8 @@ server {
 
 # Kubernetes Active Proxy
 
-{{- $services := services | groupByMulti "kap/host" "," -}}
-{{- $pods := pods | groupByMulti "kap/host" "," -}}
+{{- $services := services "" "" | groupByMulti "kap/host" "," -}}
+{{- $pods := pods "" "" | groupByMulti "kap/host" "," -}}
 {{- $aggregated := aggregateMap $pods $services -}}
 
 {{- range $opt, $aggs := $aggregated }}

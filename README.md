@@ -38,6 +38,8 @@ The containers being proxied must [expose](https://docs.docker.com/reference/run
 
 Provided your DNS is setup to forward foo.bar.com to the a host running `kube-active-proxy`, the request will be routed to a container with the `kap/host` label set.
 
+At the moment, all namespaces that SA has access will be check for any label. ( TODO : Add a way to limit to some specific namespaces)
+
 #### Summary of available labels for proxied pods/services.
 
 
