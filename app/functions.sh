@@ -45,8 +45,8 @@ fi
 reload_nginx() {
 #Delete file to avoid looping problem
 rm -f /etc/nginx/conf.d/default.conf
-#Rerun kube-gen to recreate a new nginx config file 
-kube-gen --onetime --notify-cmd="nginx -s reload" --check-cmd="nginx -t " /app/nginx.tmpl /etc/nginx/conf.d/default.conf
+#Rerun kube-template-kap to recreate a new nginx config file 
+kube-template-kap --guess-kube-api-settings --once --config /app/kube_template.yaml
 }
 
 # Convert argument to lowercase (bash 4 only)
