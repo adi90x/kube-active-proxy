@@ -1,7 +1,7 @@
 {{- $Default_email := or (env "DEFAULT_EMAIL") "foo@bar.com" -}}
 
-{{- $hosts_services := services | getAllLabelValue "*" "kap/le_host" "," -}}
-{{- $hosts_stand := pods | getAllLabelValue "*" "kap/le_host" "," -}}
+{{- $hosts_services := services "" "" | getAllLabelValue "*" "kap/le_host" "," -}}
+{{- $hosts_stand := pods "" "" | getAllLabelValue "*" "kap/le_host" "," -}}
 {{- $hosts := concatenateUnique $hosts_services $hosts_stand -}}
 
 LETSENCRYPT_CONTAINERS=(
@@ -9,8 +9,8 @@ LETSENCRYPT_CONTAINERS=(
 )
 
 
-{{- $services := services | groupByMulti "kap/le_host" "," -}}
-{{- $pods := pods | groupByMulti "kap/le_host" "," -}}
+{{- $services := services "" "" | groupByMulti "kap/le_host" "," -}}
+{{- $pods := pods "" "" | groupByMulti "kap/le_host" "," -}}
 {{- $aggregated := uniqueMap $pods $services -}}
 {{- range $host, $agg := $aggregated -}}
 {{- $first := first $agg -}}
