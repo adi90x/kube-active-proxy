@@ -4,6 +4,7 @@ stages:
 
 variables:
   CONTAINER_IMAGE: $CI_REGISTRY_IMAGE
+  DOCKER_TLS_CERTDIR: ""
 
 image: docker
 services:
