@@ -33,7 +33,6 @@ build-image-amd64:
 build-image-arm64v8:
  stage: build
  script:
-    - docker run --privileged yen3/binfmt-register set aarch64
     - docker build --squash --build-arg IMAGE_ARCH=arm64v8 --build-arg IMAGE_ARCH_LITE=arm64 --build-arg KAP_VERSION=$kap_version -t $CONTAINER_IMAGE/arm64v8:$tag .
     - docker push $CONTAINER_IMAGE/arm64v8:$tag
 
