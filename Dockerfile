@@ -1,14 +1,14 @@
 #Arg used for multi-arch building
 ARG IMAGE_ARCH=amd64
 
-#Add a specific build to import Qemu https://yen3.github.io/posts/2017/build_multi_arch_docker_image/
-FROM yen3/binfmt-register:0.1 as builder
+#Add a specific build to import qemu for multi arch building
+FROM multiarch/qemu-user-static as builder
 
-#Use 9-alpine as base to be in line with cloud9
+#Use alpine as base 
 FROM ${IMAGE_ARCH}/nginx:alpine
 
 # Import Qemu from builder container
-COPY --from=builder /qemu/qemu-aarch64-static /usr/local/bin/qemu-aarch64-static
+COPY --from=builder /usr/bin/qemu-aarch64-static /usr/local/bin/qemu-aarch64-static
 
 MAINTAINER Adrien M amaurel90@gmail.com
 
@@ -17,8 +17,6 @@ ARG IMAGE_ARCH=amd64
 ARG IMAGE_ARCH_LITE="amd64"
 ARG KAP_VERSION=master
 ENV DEBUG=false KAP_DEBUG="0" KAP_VERSION=$KAP_VERSION
-
-
 
 RUN apk add --no-cache nano ca-certificates unzip wget certbot bash openssl supervisor
 
