@@ -22,7 +22,7 @@ update_certs() {
         email_varname="LETSENCRYPT_${cid}_EMAIL"
         test_certificate_varname="LETSENCRYPT_${cid}_TEST"
 
-        if [[ $(lc "${!test_certificate_varname:-}") == true ]]; then
+        if [[ $(lc "${!test_certificate_varname:-}") == true ]] || [ "$KAP_LE_TEST" == true ]; then
             acme_server="https://acme-staging-v02.api.letsencrypt.org/directory"
         else
             acme_server="https://acme-v02.api.letsencrypt.org/directory"

@@ -19,8 +19,6 @@ I would recommend to use latest image from DockerHub or you can use tag versions
 
 -- Easy Setup with Helm
 
--- Setup an environment variable to force all to Let's Encrypt to Staging environment
-
 ### Usage
 
 Minimal Params To run it:
@@ -71,6 +69,7 @@ At the moment, all namespaces that SA has access will be check for any label. ( 
 | `CRON`             | Cron like expression to define when certs are renew. Default : `0 2 * * *`
 | `DEFAULT_HOST`     | Default Nginx host.
 | `DEFAULT_EMAIL`    | Default Email for Letsencrypt.
+| `KAP_LE_TEST`      | If set to `true` all LE request will be against stagging API ( usefull for test )
 | `KAP_DEBUG` 		   | Define kube-Gen-kap verbosity (Valid values: "debug", "info", "warn", and "error"). Default: `info`
 | `DEFAULT_PORT` 	   | Default port use for containers ( Default : `80` )
 | `SPECIFIC_HOST` 	 | Limit kap to only containers of a specific host name
