@@ -15,9 +15,10 @@ Kube Active Proxy use annotation on pod or services to setup nginx proxy.
 
 I would recommend to use latest image from DockerHub or you can use tag versions. Keep in mind that branch are mostly development features and could not work as expected.
 
-### Easy Setup with Helm
+### TODO
 
-TO-DO
+-- Easy Setup with Helm
+-- Setup an environment variable to force all to Let's Encrypt to Staging environment
 
 ### Usage
 
