@@ -18,6 +18,7 @@ I would recommend to use latest image from DockerHub or you can use tag versions
 ### TODO
 
 -- Easy Setup with Helm
+
 -- Setup an environment variable to force all to Let's Encrypt to Staging environment
 
 ### Usage
