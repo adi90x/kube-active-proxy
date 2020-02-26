@@ -26,4 +26,4 @@ build:
     
   script:
     - update-binfmts --enable # Important: Ensures execution of other binary formats is enabled in the kernel
-    - docker buildx build --build-arg VERSION_KUBE_GEN=$build_version --build-arg KAP_VERSION=$kap_version --progress tty --platform linux/amd64,linux/arm64 --pull -t "$CI_REGISTRY_IMAGE" --push .
+    - docker buildx build --build-arg VERSION_KUBE_GEN=$build_version --build-arg KAP_VERSION=$kap_version --progress tty --platform linux/amd64,linux/arm64 --pull -t "$CI_REGISTRY_IMAGE":$tag --push .
