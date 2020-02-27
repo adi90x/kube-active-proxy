@@ -1,4 +1,11 @@
-{{- $Default_email := or (env "DEFAULT_EMAIL") "foo@bar.com" -}}
+#
+# This is the template use to grab host for Lets Encrypt
+# Environment Variable can set DEFAULT_EMAIL and KAP_LE_TEST
+# KAP_LE_TEST override is currently set to : {{ env "KAP_LE_TEST" }}
+#
+
+
+{{ $Default_email := or (env "DEFAULT_EMAIL") "foo@bar.com" -}}
 
 {{- $hosts_services := services "" "" | getAllLabelValue "*" "kap/le_host" "," -}}
 {{- $hosts_stand := pods "" "" | getAllLabelValue "*" "kap/le_host" "," -}}
@@ -21,4 +28,3 @@ LETSENCRYPT_{{$cid}}_EMAIL="{{GetValue $first.Annotations "kap/le_email" $Defaul
 LETSENCRYPT_{{$cid}}_TEST="{{GetValue $first.Annotations "kap/le_test" "false"}}"
 
 {{- end }}
-
