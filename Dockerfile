@@ -1,10 +1,15 @@
+#Setup buildx multiarch
+ARG TARGETARCH=amd64
+
 #Use alpine as base
 FROM nginx:alpine
 
 MAINTAINER Adrien M amaurel90@gmail.com
 
+#Recup la valeur par default
 ARG TARGETARCH
 
+#Use also build arg
 ARG VERSION_KUBE_GEN="artifacts/master"
 ARG KAP_VERSION=master
 ENV DEBUG=false KAP_DEBUG="0" KAP_VERSION=$KAP_VERSION
