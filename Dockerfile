@@ -1,12 +1,9 @@
-#Setup buildx multiarch
-ARG TARGETARCH=amd64
-
 #Use alpine as base
 FROM nginx:alpine
 
 MAINTAINER Adrien M amaurel90@gmail.com
 
-#Recup la valeur par default
+#Recup la valeur used for multiarch building
 ARG TARGETARCH
 
 #Use also build arg
