@@ -16,8 +16,9 @@ default:
   before_script:
     - if [ $CI_BUILD_REF_NAME == "master" ]; then tag="latest"; else tag=$CI_BUILD_REF_NAME; fi
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    # Use docker-container driver to allow useful features (push/multi-platform)
     - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-    - docker buildx create --driver docker-container --use # Use docker-container driver to allow useful features (push/multi-platform)
+    - docker buildx create --driver docker-container --use
     - kap_version=`echo "$(echo $CI_COMMIT_REF_NAME)"@"$(echo $CI_COMMIT_SHA | cut -c -7)"`
     - version_available=$(curl --write-out %{http_code} --silent --output /dev/null https://gitlab.com/adi90x/kube-template-kap/builds/artifacts/$CI_BUILD_REF_NAME/browse?job=compile-go)
     - if [ $version_available == "302" ]; then build_version=artifacts/$CI_BUILD_REF_NAME; else build_version="artifacts/master"; fi
@@ -28,12 +29,12 @@ default:
 build-amd64:
   stage: build
   script:
-    - docker buildx build --compress --build-arg VERSION_KUBE_GEN=$build_version --build-arg KAP_VERSION=$kap_version --progress tty --platform linux/amd64 --pull -t "$CI_REGISTRY_IMAGE"/amd64:$tag --push .
+    - docker buildx build --compress --progress plain --build-arg VERSION_KUBE_GEN=$build_version --build-arg KAP_VERSION=$kap_version --platform linux/amd64 --cache-from="$CI_REGISTRY_IMAGE"/amd64 --cache-to="$CI_REGISTRY_IMAGE"/amd64 --pull -t "$CI_REGISTRY_IMAGE"/amd64:$tag --push .
 
 build-arm64:
   stage: build
   script:
-    - docker buildx build --compress --build-arg VERSION_KUBE_GEN=$build_version --build-arg KAP_VERSION=$kap_version --progress tty --platform linux/arm64 --pull -t "$CI_REGISTRY_IMAGE"/arm64:$tag --push .
+    - docker buildx build --compress --progress plain --build-arg VERSION_KUBE_GEN=$build_version --build-arg KAP_VERSION=$kap_version --platform linux/arm64 --cache-from="$CI_REGISTRY_IMAGE"/arm64 --cache-to="$CI_REGISTRY_IMAGE"/arm64 --pull -t "$CI_REGISTRY_IMAGE"/arm64:$tag --push .
 
 push-image:
   stage: push
@@ -42,6 +43,4 @@ push-image:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     - docker buildx create --driver docker-container --use
   script:
-    - docker pull "$CI_REGISTRY_IMAGE"/amd64:$tag
-    - docker pull "$CI_REGISTRY_IMAGE"/arm64:$tag
-    - docker buildx build --compress --progress tty --platform linux/arm64,linux/amd64 -t "$CI_REGISTRY_IMAGE":$tag --push .
+    - docker buildx build --compress --progress plain --platform linux/arm64,linux/amd64 --cache-from="$CI_REGISTRY_IMAGE"/arm64 --cache-from="$CI_REGISTRY_IMAGE"/amd64 --cache-to="$CI_REGISTRY_IMAGE" -t "$CI_REGISTRY_IMAGE":$tag --push .
