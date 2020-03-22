@@ -4,7 +4,7 @@ FROM nginx:alpine
 MAINTAINER Adrien M amaurel90@gmail.com
 
 #Recup la valeur used for multiarch building
-ARG TARGETARCH
+ARG TARGETARCH="amd64"
 
 #Use also build arg
 ARG VERSION_KUBE_GEN="artifacts/master"
