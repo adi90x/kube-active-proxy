@@ -3,13 +3,18 @@ FROM nginx:alpine
 
 MAINTAINER Adrien M amaurel90@gmail.com
 
-#Recup la valeur used for multiarch building
-ARG TARGETARCH="amd64"
+#Recup la valeur used for multiarch building (can't have default value)
+ARG TARGETARCH
+
+#Push it into a ENV to have a default value
+ENV TARGETARCH=${TARGETARCH:-amd64}
 
 #Use also build arg
 ARG VERSION_KUBE_GEN="artifacts/master"
 ARG KAP_VERSION=master
 ENV DEBUG=false KAP_DEBUG="0" KAP_VERSION=$KAP_VERSION
+
+RUN echo $TARGETARCH
 
 RUN apk add --no-cache nano ca-certificates unzip wget certbot bash openssl supervisor
 
