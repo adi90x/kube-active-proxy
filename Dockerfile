@@ -14,8 +14,6 @@ ARG VERSION_KUBE_GEN="artifacts/master"
 ARG KAP_VERSION=master
 ENV DEBUG=false KAP_DEBUG="0" KAP_VERSION=$KAP_VERSION
 
-RUN echo $TARGETARCH
-
 RUN apk add --no-cache nano ca-certificates unzip wget certbot bash openssl supervisor
 
 # Install Kube-Gen-KAP
