@@ -279,6 +279,8 @@ proxy_set_header Proxy "";
 {{- $https_ports_stand := pods "" "" | getAllLabelValue "" "kap/https_listen_ports" ","}}
 {{- $https_ports := concatenateUnique $https_ports_services $https_ports_stand }}
 
+{{- $acme_internal := (env "ACME_INTERNAL") "" }}
+
 server {
 	server_name _; # This is just an invalid value which will never trigger on a real hostname.
 	listen 80;
@@ -288,7 +290,18 @@ server {
 		{{- end }}
 		{{- end }}
 	access_log /var/log/nginx/access.log vhost;
-	return 503;
+	location / {
+		return 503;
+	}
+
+	{{- if (ne $acme_internal "") }}
+	location /.well-known { # This allows proxy acme requests to pass through to another server.
+		proxy_pass http://{{ $acme_internal }}/.well-known;
+		proxy_set_header X-Real-IP $remote_addr;
+      		proxy_set_header Host $host;
+      		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+	}
+	{{- end }}
 }
 
 {{- if (and (exists "/etc/nginx/certs/default.crt") (exists "/etc/nginx/certs/default.key")) }}
@@ -328,10 +341,14 @@ server {
 {{- $destProto := first $destParts }}
 {{- $destPort := last $destParts }}
 {{- $alive := cell false }}
+{{- $anyHealthy := cell false }}
 
 {{  range $agg := $aggs | filterHost $host_filter | filterLabel "kap/KAP_name" $kap_name }}
 {{- $addrLen := getPortsLen $agg }}
 {{- $online := isOnline $agg -}}
+{{- if $online }}
+	{{- $_ := $anyHealthy.Set true }}
+{{- end }}
 {{- $aggIP := getIP $agg -}}
 {{- if ne $destPort ""}}
 			{{- template "upstream" (dict "HOST" $host "FIRST" $alive "IP" $aggIP "ONLINE" $online "PORT" $destPort) }}
@@ -350,7 +367,9 @@ server {
 		{{- end }}
 {{- end -}}
 {{- if $alive.Get }}
-	server localhost down;
+	{{- if not $anyHealthy.Get }}
+		server localhost down;
+	{{- end }}
 }
 
 {{ template "server" (dict "HOST" $host "FIRST" (first $aggs)  "PROTO" $destProto) }}

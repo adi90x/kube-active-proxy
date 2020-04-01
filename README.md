@@ -26,7 +26,7 @@ Minimal Params To run it:
     $ kubectl -f apply kube-active-proxy.yaml
 
 This will create a daemonset with an host selector based on the following label: `kap/front="true"` - Add this label to any node to start using it as a KAP frontend.
-This will also create a Service Account for Kube-Active-Proxy with access to Services and Pods in the namespace set. 
+This will also create a Service Account for Kube-Active-Proxy with access to Services and Pods in the namespace set.
 
 Then start any pods or service you want proxied with an annotation : `kap/host=subdomain.youdomain.com`
 
@@ -34,7 +34,7 @@ Then start any pods or service you want proxied with an annotation : `kap/host=s
         annotations:
            kap/host: foo.bar.com
 
-The containers being proxied must [expose](https://docs.docker.com/reference/run/#expose-incoming-ports) the port to be proxied, either by using the `EXPOSE` directive in their `Dockerfile` or by using the `--expose` flag to `docker run` or `docker create`.
+The containers being proxied must [expose](https://docs.docker.com/engine/reference/run/#expose-incoming-ports) the port to be proxied, either by using the `EXPOSE` directive in their `Dockerfile` or by using the `--expose` flag to `docker run` or `docker create`.
 
 Provided your DNS is setup to forward foo.bar.com to the a host running `kube-active-proxy`, the request will be routed to a container with the `kap/host` label set.
 
@@ -74,6 +74,7 @@ At the moment, all namespaces that SA has access will be check for any label. ( 
 | `DEFAULT_PORT` 	   | Default port use for containers ( Default : `80` )
 | `SPECIFIC_HOST` 	 | Limit kap to only containers of a specific host name
 | `KAP_NAME` 	       | If specify kap will only publish service with `kap/kap_name = kap_NAME`
+| `ACME_INTERNAL` 	 | Enable passing ACME request to another RAP instance
 
 #### Quick Summary of interesting volume to mount.
 
