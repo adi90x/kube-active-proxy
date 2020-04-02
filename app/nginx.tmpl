@@ -279,7 +279,7 @@ proxy_set_header Proxy "";
 {{- $https_ports_stand := pods "" "" | getAllLabelValue "" "kap/https_listen_ports" ","}}
 {{- $https_ports := concatenateUnique $https_ports_services $https_ports_stand }}
 
-{{- $acme_internal := (env "ACME_INTERNAL") "" }}
+{{- $acme_internal := or (env "ACME_INTERNAL") "" }}
 
 server {
 	server_name _; # This is just an invalid value which will never trigger on a real hostname.
