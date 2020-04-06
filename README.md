@@ -23,10 +23,17 @@ I would recommend to use latest image from DockerHub or you can use tag versions
 
 Minimal Params To run it:
 
-    $ kubectl -f apply kube-active-proxy.yaml
+    $ kubectl -f apply kube-active-proxy-ds.yaml
 
 This will create a daemonset with an host selector based on the following label: `kap/front="true"` - Add this label to any node to start using it as a KAP frontend.
 This will also create a Service Account for Kube-Active-Proxy with access to Services and Pods in the namespace set.
+
+If you have a LoadBalancer available in your cluster it is better to use :
+
+    $ kubectl -f apply kube-active-proxy-lb.yaml
+
+/!\ Remenber to always check the content of the yaml file before applying it in your cluster. /!\
+/!\ At the moment, LB and DS version create a new service account with total access to your cluster => Make sure to tune it as you want ! /!\
 
 Then start any pods or service you want proxied with an annotation : `kap/host=subdomain.youdomain.com`
 

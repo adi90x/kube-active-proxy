@@ -16,13 +16,24 @@ spec:
       labels:
         app: kube-active-proxy
     spec:
-      containers:
-      - env:
-        - name: KAP_DEBUG
-          value: "10"
-        image: registry.gitlab.com/adi90x/kube-active-proxy:latest
-        imagePullPolicy: Always
-        name: kube-active-proxy
+      - name: "kube-active-proxy"
+        image: adi90x/kube-active-proxy
+        env:
+          - name: KAP_LE_TEST
+            value: "false"
+        ports:
+          - name: tcp-80
+            containerPort: 80
+          - name: tcp-443
+            containerPort: 443
+        volumeMounts:
+          - mountPath: "/etc/nginx/htpasswd"
+            name: kap-htpasswd
+          - mountPath: "/etc/nginx/vhost.d"
+            name: kap-vhost
+          - mountPath: "/etc/letsencrypt"
+            name: kap-le
+        imagePullPolicy: "Always"
         ports:
         - containerPort: 80
           hostPort: 80
@@ -66,3 +77,36 @@ roleRef:
   kind: ClusterRole
   name: kube-active-proxy
   apiGroup: rbac.authorization.k8s.io
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: kap-htpasswd-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 50Mi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: kap-vhost-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 50Mi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: kap-le-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 200Mi

@@ -1,0 +1,125 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kube-active-proxy
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 80
+    name: tcp80
+  - port: 443
+    targetPort: 443
+    name: tcp443
+  selector:
+    app: kube-active-proxy
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "kube-active-proxy"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kube-active-proxy
+  template:
+    metadata:
+      labels:
+        app: kube-active-proxy
+    spec:
+      serviceAccountName: kube-active-proxy
+      volumes:
+        - name: kap-htpasswd
+          persistentVolumeClaim:
+            claimName: kap-htpasswd-pvc
+        - name: kap-vhost
+          persistentVolumeClaim:
+            claimName: kap-vhost-pvc
+        - name: kap-le
+          persistentVolumeClaim:
+            claimName: kap-le-pvc
+      containers:
+        - name: "kube-active-proxy"
+          image: adi90x/kube-active-proxy
+          env:
+            - name: KAP_LE_TEST
+              value: "false"
+          ports:
+            - name: tcp-80
+              containerPort: 80
+            - name: tcp-443
+              containerPort: 443
+          volumeMounts:
+            - mountPath: "/etc/nginx/htpasswd"
+              name: kap-htpasswd
+            - mountPath: "/etc/nginx/vhost.d"
+              name: kap-vhost
+            - mountPath: "/etc/letsencrypt"
+              name: kap-le
+          imagePullPolicy: "Always"
+          securityContext:
+            privileged: true
+      restartPolicy: "Always"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kube-active-proxy
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: kube-active-proxy
+rules:
+- apiGroups: [""]
+  resources: ["endpoints","pods","services","nodes"]
+  verbs: ["get","list","watch"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: kube-active-proxy
+subjects:
+- kind: ServiceAccount
+  name: kube-active-proxy # Name is case sensitive
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: kube-active-proxy
+  apiGroup: rbac.authorization.k8s.io
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: kap-htpasswd-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 50Mi
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: kap-vhost-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 50Mi
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: kap-le-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 200Mi
