@@ -1,4 +1,4 @@
-![nginx latest](https://img.shields.io/badge/nginx-latest-brightgreen.svg)[![build status](https://gitlab.com/adi90x/kube-active-proxy/badges/master/build.svg)](https://gitlab.com/adi90x/kube-active-proxy/commits/master)  ![License MIT](https://img.shields.io/badge/license-MIT-blue.svg)   [![Docker Pulls](https://img.shields.io/docker/pulls/adi90x/kube-active-proxy.svg)](https://hub.docker.com/r/adi90x/kube-active-proxy/)  [![Docker Automated buil](https://img.shields.io/docker/automated/adi90x/kube-active-proxy.svg)](https://hub.docker.com/r/adi90x/kube-active-proxy/)
+![nginx latest](https://img.shields.io/badge/nginx-latest-brightgreen.svg)[![build status](https://img.shields.io/gitlab/pipeline/adi90x/kube-active-proxy/master)](https://gitlab.com/adi90x/kube-active-proxy)  ![License MIT](https://img.shields.io/badge/license-MIT-blue.svg)   [![Docker Pulls](https://img.shields.io/docker/pulls/adi90x/kube-active-proxy.svg)](https://hub.docker.com/r/adi90x/kube-active-proxy/)  [![Docker Automated buil](https://img.shields.io/docker/automated/adi90x/kube-active-proxy.svg)](https://hub.docker.com/r/adi90x/kube-active-proxy/)
 
 
 ## Kube Active Proxy
