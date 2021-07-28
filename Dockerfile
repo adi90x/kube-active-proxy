@@ -18,12 +18,12 @@ RUN apk add --no-cache nano ca-certificates unzip wget certbot bash openssl supe
 
 # Install Kubectl
 RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl \
-	&& install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-        && rm kubectl
+	&& install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl \
+	&& rm kubectl
 
 # Install Kube-Gen-KAP
 RUN wget "https://gitlab.com/adi90x/kube-template-kap/builds/$VERSION_KUBE_GEN/download?job=compile-go-$TARGETARCH" -O /tmp/kube-template-kap.zip \
-        && unzip /tmp/kube-template-kap.zip -d /usr/local/bin \
+	&& unzip /tmp/kube-template-kap.zip -d /usr/local/bin \
 	&& chmod u+x /usr/local/bin/kube-template-kap \
 	&& rm -f /tmp/kube-template-kap.zip
 
