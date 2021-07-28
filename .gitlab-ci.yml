@@ -5,10 +5,10 @@ stages:
 
 variables:
   CONTAINER_IMAGE: $CI_REGISTRY_IMAGE
-  DOCKER_DRIVER: overlay2
-  DOCKER_TLS_CERTDIR: ""
+  #DOCKER_DRIVER: overlay2
+  #DOCKER_TLS_CERTDIR: ""
   DOCKER_CLI_EXPERIMENTAL: enabled
-  DOCKER_HOST: "tcp://docker:2375"
+  #DOCKER_HOST: "tcp://docker:2375"
 
 default:
   retry: 2
