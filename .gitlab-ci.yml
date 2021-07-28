@@ -24,8 +24,8 @@ default:
     # Use docker-container driver to allow useful features (push/multi-platform)
     #- docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     - docker run --privileged --rm registry.gitlab.com/adi90x/multiarch --install all
-    - docker context create building-env
-    - docker buildx create --driver docker-container --use
+    - docker context create tls-context
+    - docker buildx create --driver docker-container --use tls-context
     - kap_version=`echo "$(echo $CI_COMMIT_REF_NAME)"@"$(echo $CI_COMMIT_SHA | cut -c -7)"`
     - version_available=$(curl --write-out %{http_code} --silent --output /dev/null https://gitlab.com/adi90x/kube-template-kap/builds/artifacts/$CI_BUILD_REF_NAME/browse?job=compile-go)
     - if [ $version_available == "302" ]; then build_version=artifacts/$CI_BUILD_REF_NAME; else build_version="artifacts/master"; fi
