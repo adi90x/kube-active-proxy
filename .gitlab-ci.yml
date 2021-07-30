@@ -36,12 +36,12 @@ default:
 build-amd64:
   stage: build
   script:
-    - docker buildx build $USE_CACHE --compress --progress plain --platform linux/amd64 --build-arg VERSION_KUBE_GEN=$build_version --build-arg KAP_VERSION=$kap_version --cache-from type=registry,ref=$CI_REGISTRY_IMAGE/cache/amd64:$tag --cache-to type=registry,ref=$CI_REGISTRY_IMAGE/cache/amd64:$tag,mode=max --tag $CI_REGISTRY_IMAGE/amd64:$tag --push .
+    - docker buildx build $USE_CACHE --compress --progress plain --platform linux/amd64 --build-arg VERSION_KUBE_GEN=$build_version --build-arg KAP_VERSION=$kap_version --cache-from type=registry,ref=$CI_REGISTRY_IMAGE/cache/amd64:$tag --cache-to type=registry,ref=$CI_REGISTRY_IMAGE/cache/amd64:$tag,mode=max --pull --tag $CI_REGISTRY_IMAGE/amd64:$tag --push .
 
 build-arm64:
   stage: build
   script:
-    - docker buildx build $USE_CACHE --compress --progress plain --platform linux/arm64 --build-arg VERSION_KUBE_GEN=$build_version --build-arg KAP_VERSION=$kap_version --cache-from type=registry,ref=$CI_REGISTRY_IMAGE/cache/arm64:$tag --cache-to type=registry,ref=$CI_REGISTRY_IMAGE/cache/arm64:$tag,mode=max --tag $CI_REGISTRY_IMAGE/arm64:$tag --push .
+    - docker buildx build $USE_CACHE --compress --progress plain --platform linux/arm64 --build-arg VERSION_KUBE_GEN=$build_version --build-arg KAP_VERSION=$kap_version --cache-from type=registry,ref=$CI_REGISTRY_IMAGE/cache/arm64:$tag --cache-to type=registry,ref=$CI_REGISTRY_IMAGE/cache/arm64:$tag,mode=max --pull --tag $CI_REGISTRY_IMAGE/arm64:$tag --push .
 
 push-image:
   stage: push
