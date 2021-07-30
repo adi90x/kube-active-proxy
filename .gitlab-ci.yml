@@ -33,12 +33,6 @@ default:
     #- update-binfmts --enable # Important: Ensures execution of other binary formats is enabled in the kernel => Move to host setup
     # Set USE_CACHE=--no-cache if need to force rebuild
 
-build-full:
-  stage: build
-  script:
-    - docker pull $CI_REGISTRY_IMAGE:$tag || true
-    - docker buildx build --compress --progress plain --build-arg VERSION_KUBE_GEN=$build_version --build-arg KAP_VERSION=$kap_version --platform linux/arm64,linux/amd64 --cache-from=$CI_REGISTRY_IMAGE$tag --pull -t $CI_REGISTRY_IMAGE:$tag --cache-to=type=inline  --push .
-
 build-amd64:
   stage: build
   script:
