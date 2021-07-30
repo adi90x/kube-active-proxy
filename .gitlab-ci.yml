@@ -46,7 +46,8 @@ build-arm64:
 push-image:
   stage: push
   script:
-    - docker manifest create $CI_REGISTRY_IMAGE:$tag --amend $CI_REGISTRY_IMAGE/arm64:$tag --amend $CI_REGISTRY_IMAGE/amd64:$tag
+    #- docker manifest rm $CI_REGISTRY_IMAGE:$tag || true
+    - docker manifest amend $CI_REGISTRY_IMAGE:$tag --amend $CI_REGISTRY_IMAGE/arm64:$tag --amend $CI_REGISTRY_IMAGE/amd64:$tag
     - docker manifest push $CI_REGISTRY_IMAGE:$tag 
 
 deploy-k3s:
