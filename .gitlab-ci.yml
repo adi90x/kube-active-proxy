@@ -19,7 +19,7 @@ default:
   services:
     - docker:dind
   before_script:
-    - if [ $CI_BUILD_REF_NAME == "master" ]; then tag="latest"; else tag=$CI_BUILD_REF_NAME; fi
+    - if [[ $CI_BUILD_REF_NAME == "master" ]]; then tag="latest"; else tag=$CI_BUILD_REF_NAME; fi
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     # Use docker-container driver to allow useful features (push/multi-platform)
     - docker run --privileged --rm registry.gitlab.com/adi90x/multiarch --install all
@@ -27,8 +27,8 @@ default:
     - docker buildx create --driver docker-container --use tls-context
     - kap_version=`echo "$(echo $CI_COMMIT_REF_NAME)"@"$(echo $CI_COMMIT_SHA | cut -c -7)"`
     - version_available=$(curl --write-out %{http_code} --silent --output /dev/null https://gitlab.com/adi90x/kube-template-kap/builds/artifacts/$CI_BUILD_REF_NAME/browse?job=compile-go)
-    - if [ $version_available == "302" ]; then build_version=artifacts/$CI_BUILD_REF_NAME; else build_version="artifacts/master"; fi
-    - if [ $FORCE_KUBE_GEN_VERSION != "" ]; then build_version=$FORCE_KUBE_GEN_VERSION/artifacts; fi
+    - if [[ $version_available == "302" ]]; then build_version=artifacts/$CI_BUILD_REF_NAME; else build_version="artifacts/master"; fi
+    - if [[ $FORCE_KUBE_GEN_VERSION != "" ]]; then build_version=$FORCE_KUBE_GEN_VERSION/artifacts; fi
     #- docker buildx inspect --bootstrap # Not need only for debug
     #- update-binfmts --enable # Important: Ensures execution of other binary formats is enabled in the kernel => Move to host setup
     # Set USE_CACHE=--no-cache if need to force rebuild
