@@ -7,8 +7,6 @@ variables:
   CONTAINER_IMAGE: $CI_REGISTRY_IMAGE
   DOCKER_DRIVER: overlay2
   DOCKER_CLI_EXPERIMENTAL: enabled
-  #DOCKER_HOST: tcp://docker:2375
-  #DOCKER_TLS_CERTDIR: ""
   DOCKER_HOST: tcp://docker:2376
   DOCKER_TLS_CERTDIR: "/certs"
   DOCKER_TLS_VERIFY: 1
@@ -45,12 +43,18 @@ build-arm64:
 
 push-image:
   stage: push
+  before_script:
+    - if [[ $CI_BUILD_REF_NAME == "master" ]]; then tag="latest"; else tag=$CI_BUILD_REF_NAME; fi
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   script:
     - docker manifest create $CI_REGISTRY_IMAGE:$tag --amend $CI_REGISTRY_IMAGE/arm64:$tag --amend $CI_REGISTRY_IMAGE/amd64:$tag
     - docker manifest push $CI_REGISTRY_IMAGE:$tag 
 
 deploy-k3s:
   stage: deploy
+  before_script:
+    - if [[ $CI_BUILD_REF_NAME == "master" ]]; then tag="latest"; else tag=$CI_BUILD_REF_NAME; fi
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   script:
     - mkdir -p ~/.kube/ && echo $KUBE_CONFIG_64 | base64 -d > ~/.kube/config
     - kubectl -n default rollout restart deploy/kube-active-proxy
