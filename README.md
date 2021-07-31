@@ -34,6 +34,11 @@ If you have a LoadBalancer available in your cluster it is better to use :
 
 /!\ Remenber to always check the content of the yaml file before applying it in your cluster. /!\
 /!\ At the moment, LB and DS version create a new service account with total access to your cluster => Make sure to tune it as you want ! /!\
+/!\ Service account need access :
+	resources: ["endpoints","pods","services","nodes","secrets"]
+	verbs: ["get","list","watch","create","delete"]
+/!\ resources: "secrets" and verbs: "create" & "delete" are only needed if you want TLS keys to be available as kubernetes secrets.
+
 
 Then start any pods or service you want proxied with an annotation : `kap/host=subdomain.youdomain.com`
 
