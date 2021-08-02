@@ -21,6 +21,9 @@ update_certs() {
         hosts_array=$host_varname[@]
         email_varname="LETSENCRYPT_${cid}_EMAIL"
         test_certificate_varname="LETSENCRYPT_${cid}_TEST"
+        k8s_secret_ns="LETSENCRYPT_${cid}_K8S_SECRET_NS"
+        k8s_secret_name="LETSENCRYPT_${cid}_K8S_SECRET_NAME"
+
 
         if [[ $(lc "${!test_certificate_varname:-}") == true ]] || [ "$KAP_LE_TEST" == true ]; then
             acme_server="https://acme-staging-v02.api.letsencrypt.org/directory"
@@ -28,8 +31,8 @@ update_certs() {
             acme_server="https://acme-v02.api.letsencrypt.org/directory"
         fi
 
-        sleep 30
-        echo "Sleep 30s before Using Acme server $acme_server"
+        sleep 10
+        echo "Sleep 10s before Using Acme server $acme_server"
 
         debug=""
         [[ $DEBUG == true ]] && debug+=" -v"
@@ -74,8 +77,14 @@ update_certs() {
 		domarray=( $listdomain )
 		certname=${domarray[0]}
 		for dom in $listdomain; do
+		echo "Start dom :" $dom "Start certname: " $certname 
 		setup_certs $dom $certname
-		generate_secrets $dom $certname
+		echo "K8S Secret :" $k8s_secret_ns "K8S_Name" $k8s_secret_name "Check:" [[ $k8s_secret_ns != "false" ]]
+
+		if [[ $k8s_secret_ns != "false" ]]; then
+			generate_secrets $dom $certname $k8s_secret_ns $k8s_secret_name
+		fi
+ 
 		done
 		domainparam=""
     done
@@ -85,3 +94,4 @@ update_certs() {
 }
 
 update_certs
+
