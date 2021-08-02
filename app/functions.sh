@@ -46,18 +46,11 @@ generate_secrets() {
 local dom="${1:-}"
 local certname="${2:-}"
 if [  -e /etc/letsencrypt/live/$certname/privkey.pem ] && [ -e /etc/letsencrypt/live/$certname/fullchain.pem ]; then
-    kubectl delete secret tls kap-$certname --ignore-not-found=true
-    kubectl create secret tls kap-$certname --cert=/etc/letsencrypt/live/$certname/fullchain.pem --key=/etc/letsencrypt/live/$certname/privkey.pem
+    kubectl delete secret tls kap-$dom --ignore-not-found=true
+    kubectl create secret tls kap-$dom --cert=/etc/letsencrypt/live/$certname/fullchain.pem --key=/etc/letsencrypt/live/$certname/privkey.pem
 fi
 
 }
-
-
-
-
-
-
-
 
 
 ## Nginx

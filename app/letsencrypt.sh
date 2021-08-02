@@ -75,7 +75,7 @@ update_certs() {
 		certname=${domarray[0]}
 		for dom in $listdomain; do
 		setup_certs $dom $certname
-                generate_secrets $dom $certname
+		generate_secrets $dom $certname
 		done
 		domainparam=""
     done
