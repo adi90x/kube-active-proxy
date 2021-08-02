@@ -2,10 +2,10 @@
 # This is the template use to grab host to setup with Let's Encrypt SSL
 # Environment Variable can set DEFAULT_EMAIL and KAP_LE_TEST
 # KAP_LE_TEST override is currently set to : {{ env "KAP_LE_TEST" }}
-#
+# DEFAULT_EMAIL override is currently set to : {{ env "DEFAULT_EMAIL" }}
 
 
-{{ $Default_email := or (env "DEFAULT_EMAIL") "foo@bar.com" -}}
+{{ $default_email := or (env "DEFAULT_EMAIL") "foo@bar.com" -}}
 
 {{- $hosts_services := services "" "" | getAllLabelValue "*" "kap/le_host" "," -}}
 {{- $hosts_stand := pods "" "" | getAllLabelValue "*" "kap/le_host" "," -}}
@@ -21,10 +21,16 @@ LETSENCRYPT_CONTAINERS=(
 {{- $aggregated := uniqueMap $pods $services -}}
 {{- range $host, $agg := $aggregated -}}
 {{- $first := first $agg -}}
-{{- $cid := formatClean $host }}
+{{- $cid := formatClean $host -}}
+{{- $default_secret_name := printf "%q" (print "kap-" $host) }}
+
 
 LETSENCRYPT_{{$cid}}_HOST=( '{{$host}}' )
-LETSENCRYPT_{{$cid}}_EMAIL="{{GetValue $first.Annotations "kap/le_email" $Default_email}}"
+LETSENCRYPT_{{$cid}}_EMAIL="{{GetValue $first.Annotations "kap/le_email" $default_email}}"
 LETSENCRYPT_{{$cid}}_TEST="{{GetValue $first.Annotations "kap/le_test" "false"}}"
+LETSENCRYPT_{{$cid}}_GENERATESECRET="{{GetValue $first.Annotations "kap/k8s_secret_ns" "false"}}"
+LETSENCRYPT_{{$cid}}_SECRETNAME="{{GetValue $first.Annotations "kap/k8s_secret_name" $default_secret_name}}"
+
 
 {{- end }}
+
