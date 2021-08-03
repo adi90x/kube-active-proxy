@@ -22,7 +22,7 @@ LETSENCRYPT_CONTAINERS=(
 {{- range $host, $agg := $aggregated -}}
 {{- $first := first $agg -}}
 {{- $cid := formatClean $host -}}
-{{- $default_secret_name := printf "%q" (print "kap-" $host) }}
+{{- $default_secret_name := print "kap-" $host }}
 
 
 LETSENCRYPT_{{$cid}}_HOST=( '{{$host}}' )
