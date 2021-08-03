@@ -77,14 +77,10 @@ update_certs() {
 		domarray=( $listdomain )
 		certname=${domarray[0]}
 		for dom in $listdomain; do
-		echo "Start dom :" $dom "Start certname: " $certname 
-		setup_certs $dom $certname
-		echo "K8S Secret :" $k8s_secret_ns "K8S_Name" $k8s_secret_name "Check:" [[ $k8s_secret_ns != "false" ]]
-
-		if [[ $k8s_secret_ns != "false" ]]; then
-			generate_secrets $dom $certname $k8s_secret_ns $k8s_secret_name
-		fi
- 
+		  setup_certs $dom $certname
+		  if [[ ${!k8s_secret_ns} != "false" ]]; then
+		    generate_secrets $dom $certname ${!k8s_secret_ns} ${!k8s_secret_name}
+		  fi
 		done
 		domainparam=""
     done

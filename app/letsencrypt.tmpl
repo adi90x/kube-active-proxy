@@ -28,8 +28,8 @@ LETSENCRYPT_CONTAINERS=(
 LETSENCRYPT_{{$cid}}_HOST=( '{{$host}}' )
 LETSENCRYPT_{{$cid}}_EMAIL="{{GetValue $first.Annotations "kap/le_email" $default_email}}"
 LETSENCRYPT_{{$cid}}_TEST="{{GetValue $first.Annotations "kap/le_test" "false"}}"
-LETSENCRYPT_{{$cid}}_GENERATESECRET="{{GetValue $first.Annotations "kap/k8s_secret_ns" "false"}}"
-LETSENCRYPT_{{$cid}}_SECRETNAME="{{GetValue $first.Annotations "kap/k8s_secret_name" $default_secret_name}}"
+LETSENCRYPT_{{$cid}}_K8S_SECRET_NS="{{GetValue $first.Annotations "kap/k8s_secret_ns" "false"}}"
+LETSENCRYPT_{{$cid}}_K8S_SECRET_NAME="{{GetValue $first.Annotations "kap/k8s_secret_name" $default_secret_name}}"
 
 
 {{- end }}
