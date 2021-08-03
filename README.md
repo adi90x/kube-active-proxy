@@ -37,7 +37,7 @@ If you have a LoadBalancer available in your cluster it is better to use :
 /!\ Service account need access :
 	resources: ["endpoints","pods","services","nodes","secrets"]
 	verbs: ["get","list","watch","create","delete"]
-/!\ resources: "secrets" and verbs: "create" & "delete" are only needed if you want TLS keys to be available as kubernetes secrets.
+/!\ resources: "secrets" and verbs: "create" & "delete" are only needed if you want TLS keys to be available as kubernetes secrets ( check kap/k8S_secret_ns & kap/k8s_secret_name ).
 
 
 Then start any pods or service you want proxied with an annotation : `kap/host=subdomain.youdomain.com`
@@ -69,9 +69,13 @@ At the moment, all namespaces that SA has access will be check for any label. ( 
 | `kap/le_bypass`            | Set to true to create a special bypass to use LE
 | `kap/http_listen_ports`    | External Port you want kube-Active-Proxy to listen to http for this server ( Default : `80` )
 | `kap/https_listen_ports`   | External Port you want kube-Active-Proxy to listen to https for this server ( Default : `443` )
-| `kap/server_tokens`    	   | Enable to specify the server_token value per container
+| `kap/server_tokens`        | Enable to specify the server_token value per container
 | `kap/client_max_body_size` | Enable to specify the client_max_body_size directive per container
-| `kap/kap_name`             | If `kap_name` is specified for a kap instance only container with label value matching `kap_name` value will be publish
+| `kap/kap_name`             | If `kap/name` is specified for a kap instance only container with label value matching `kap/name` value will be publish
+| `kap/k8s_secret_ns`        | If `kap/k8s_secret_ns` is specified a Kubernetes Secret will be created in the namespace given as value.
+| `kap/k8s_secret_name`      | If `kap/k8s_secret_name` is specified then Kubernetes Secret Name will be set to it ( Default : `kap-$kap/host` )
+
+
 
 #### Summary of environment variable available for Kube Active Proxy.
 
@@ -424,3 +428,5 @@ will be used on any virtual host which does not have a `/etc/nginx/vhost.d/{kap/
 Do not hesitate to send issues or pull requests !
 
 Automated Gitlab CI is used to build Kube Active Proxy therefore send any pull request/issues to [Kube Active Proxy on Gitlab.com](https://gitlab.com/adi90x/kube-active-proxy/)
+
+
