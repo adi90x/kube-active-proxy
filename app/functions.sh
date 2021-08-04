@@ -27,6 +27,13 @@ remove_all_location_configurations() {
     done
     eval "$old_shopt_options" # Restore shopt options
 }
+
+##Add a basic nginx server if need to generate Let's Encrypt certs without real host.
+add_basic_nginx_host() {
+    local dom="${1:-}"
+    sed "s/DOMAIN/$dom/g" /app/nginx_basic_host.conf >> /etc/nginx/conf.d/default.conf
+}
+
 ##Setup new certs
 setup_certs() {
 #Create cert link  and add dhparam key

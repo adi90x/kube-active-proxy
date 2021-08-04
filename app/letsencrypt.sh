@@ -31,8 +31,8 @@ update_certs() {
             acme_server="https://acme-v02.api.letsencrypt.org/directory"
         fi
 
-        sleep 10
-        echo "Sleep 10s before Using Acme server $acme_server"
+        sleep 3
+        echo "Sleep 3s before Using Acme server $acme_server"
 
         debug=""
         [[ $DEBUG == true ]] && debug+=" -v"
@@ -54,13 +54,21 @@ update_certs() {
 		fi
 
 	    # Split domain by ';'  create all config needed and create domain parameter for certbot 
-	    listdomain=${base_domain//;/$'\n'}
-	    for dom in $listdomain; do
-                # Add location configuration for the domain
-		add_location_configuration "$dom"
+	   listdomain=${base_domain//;/$'\n'}
+	   for dom in $listdomain; do
+		# Add location configuration for the domain
+		if grep -q "server_name $dom;" /etc/nginx/conf.d/default.conf
+		#If host don't already exist we will have to create a basic nginx config to respond to LE challenge
+		then
+     			add_location_configuration "$dom"
+		else
+			add_basic_nginx_host "$dom"
+			add_location_configuration "$dom"
+		fi
+
 		# Create a domain parameter for certbot
 		domainparam="$domainparam -d $dom "
-        done
+	   done
 
 		#Reload Nginx once location added
 		reload_nginx
