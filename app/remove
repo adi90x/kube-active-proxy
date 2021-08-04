@@ -17,5 +17,5 @@ fi
 #Delete file to avoid looping problem
 rm -f /etc/nginx/conf.d/default.conf
 
-#Rerun kube-gen to recreate a new nginx config file 
-kube-gen --onetime /app/nginx.tmpl /etc/nginx/conf.d/default.conf
+#Rerun kube-template-kap to recreate a new nginx config file 
+kube-template-kap --guess-kube-api-settings --once -t /app/nginx.tmpl:/etc/nginx/conf.d/default.conf
