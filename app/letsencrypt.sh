@@ -74,16 +74,18 @@ update_certs() {
 		reload_nginx
 
 		echo "Creating/renewal $base_domain certificates... (${hosts_array_expanded[*]})"
-
+		#Grap first domain name of the list to name the cert generated
+		domarray=( $listdomain )
+		certname=${domarray[0]}
+		
 		certbot certonly -t --agree-tos $debug $force_renewal \
 			-m ${!email_varname} -n  $domainparam \
+			--cert-name $certname \
 			--server $acme_server --expand \
 			--webroot -w /usr/share/nginx/html
 
 		echo " "
 		#Setting the cert for all domain it was created for !
-		domarray=( $listdomain )
-		certname=${domarray[0]}
 		for dom in $listdomain; do
 		  setup_certs $dom $certname
 		done
