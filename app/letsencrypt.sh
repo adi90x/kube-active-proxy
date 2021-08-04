@@ -86,10 +86,11 @@ update_certs() {
 		certname=${domarray[0]}
 		for dom in $listdomain; do
 		  setup_certs $dom $certname
-		  if [[ ${!k8s_secret_ns} != "false" ]]; then
-		    generate_secrets $dom $certname ${!k8s_secret_ns} ${!k8s_secret_name}
-		  fi
 		done
+		#Only one certificate was created so only one secret maybe push to k8s API
+		if [[ ${!k8s_secret_ns} != "false" ]]; then
+		    generate_secrets $certname ${!k8s_secret_ns} ${!k8s_secret_name}
+		fi
 		domainparam=""
     done
 

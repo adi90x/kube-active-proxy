@@ -50,10 +50,9 @@ fi
 ##Generate Kubernetes Secret
 generate_secrets() {
 #Create secrets in Kubernetes to use by other pods
-local dom="${1:-}"
-local certname="${2:-}"
-local k8s_secret_ns="${3:-}"
-local k8s_secret_name="${4:-}"
+local certname="${1:-}"
+local k8s_secret_ns="${2:-}"
+local k8s_secret_name="${3:-}"
 
 if [  -e /etc/letsencrypt/live/$certname/privkey.pem ] && [ -e /etc/letsencrypt/live/$certname/fullchain.pem ]; then
     kubectl delete secret tls -n $k8s_secret_ns $k8s_secret_name --ignore-not-found=true
