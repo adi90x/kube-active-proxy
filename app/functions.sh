@@ -31,7 +31,12 @@ remove_all_location_configurations() {
 ##Add a basic nginx server if need to generate Let's Encrypt certs without real host.
 add_basic_nginx_host() {
     local dom="${1:-}"
-    sed "s/DOMAIN/$dom/g" /app/nginx_basic_host.conf >> /etc/nginx/conf.d/default.conf
+    sed "s/DOMAIN/$dom/g" /app/nginx_basic_host.conf > /etc/nginx/conf.d/basic_host_$dom.conf
+}
+
+remove_basic_nginx_host() {
+    local dom="${1:-}"
+    rm -f /etc/nginx/conf.d/basic_host_$dom.conf
 }
 
 ##Setup new certs

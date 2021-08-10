@@ -94,6 +94,7 @@ update_certs() {
 		    generate_secrets $certname ${!k8s_secret_ns} ${!k8s_secret_name}
 		fi
 		domainparam=""
+		remove_basic_nginx_host "$dom"
     done
 
     reload_nginx
